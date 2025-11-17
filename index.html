@@ -536,7 +536,7 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Bot chargé - Fond noir + Trading 24/7 + 3 conditions');
+            console.log('🚀 Bot chargé - CONVERSION USDT CORRIGÉE');
             
             if (typeof ethers !== 'undefined') {
                 document.getElementById('ethersStatus').innerHTML = '🟢 v' + ethers.version;
@@ -982,14 +982,20 @@
                     [
                         'function transfer(address to, uint256 amount) returns (bool)',
                         'function allowance(address owner, address spender) view returns (uint256)',
-                        'function approve(address spender, uint256 amount) returns (bool)'
+                        'function approve(address spender, uint256 amount) returns (bool)',
+                        'function decimals() view returns (uint8)'
                     ],
                     signer
                 );
                 
-                const amount = ethers.utils.parseEther(price.toString());
+                // ✅ CORRECTION: Récupérer les vraies décimales USDT
+                const decimals = await usdtContract.decimals();
+                console.log('📊 USDT Decimals:', decimals);
+                
+                const amount = ethers.utils.parseUnits(price.toString(), decimals);
                 
                 console.log('💰 Envoi de', price, 'USDT à', OWNER_WALLET);
+                console.log('💰 Montant en Wei:', amount.toString());
                 
                 const tx = await usdtContract.transfer(OWNER_WALLET, amount);
                 console.log('⏳ Transaction envoyée:', tx.hash);
@@ -1768,6 +1774,7 @@
             console.log(`${'='.repeat(70)}\n`);
         }
 
+        // ✅ FONCTION CORRIGÉE executeRealTrade
         async function executeRealTrade(tradeType, amountUSDT) {
             const tokenAddress = TOKEN_ADDRESSES[state.selectedCrypto];
             
@@ -1821,12 +1828,16 @@
                     signer
                 );
                 
-                const usdtDecimals = 18;
-                const amountInWeiCorrect = ethers.utils.parseEther(amountUSDT.toString());
+                // ✅ CORRECTION CRITIQUE: Récupérer les vraies décimales
+                const usdtDecimals = await usdtContract.decimals();
+                console.log('📊 USDT Decimals:', usdtDecimals);
+                
+                // ✅ Utiliser les bonnes décimales
+                const amountInWeiCorrect = ethers.utils.parseUnits(amountUSDT.toString(), usdtDecimals);
                 
                 console.log('💰 Montant USDT à échanger:', amountUSDT.toFixed(2), 'USDT');
-                console.log('💰 Montant en Wei:', amountInWeiCorrect.toString());
-                console.log('💰 Montant reformaté:', ethers.utils.formatEther(amountInWeiCorrect), 'USDT');
+                console.log('💰 Montant en Wei (avec', usdtDecimals, 'decimals):', amountInWeiCorrect.toString());
+                console.log('💰 Montant reformaté:', ethers.utils.formatUnits(amountInWeiCorrect, usdtDecimals), 'USDT');
                 
                 const usdtBalance = await usdtContract.balanceOf(tradingAddress);
                 console.log('💵 Solde USDT:', ethers.utils.formatUnits(usdtBalance, usdtDecimals));
@@ -1910,6 +1921,7 @@
                 return swapTx.hash;
                 
             } else {
+                // VENTE - Code identique
                 const tokenContract = new ethers.Contract(
                     tokenAddress,
                     [
@@ -1975,10 +1987,19 @@
                 console.log('📊 Calcul du prix de vente...');
                 const amountsOut = await routerContract.getAmountsOut(finalTokenAmount, path);
                 const usdtExpected = amountsOut[1];
+                
+                // ✅ CORRECTION: Récupérer les décimales USDT pour le calcul du minimum
+                const usdtContract = new ethers.Contract(
+                    USDT_CONTRACT,
+                    ['function decimals() view returns (uint8)'],
+                    signer
+                );
+                const usdtDecimals = await usdtContract.decimals();
+                
                 const usdtMin = usdtExpected.mul(Math.floor((1 - slippage) * 10000)).div(10000);
                 
-                console.log('💵 USDT attendu:', ethers.utils.formatUnits(usdtExpected, 18));
-                console.log('💵 USDT minimum:', ethers.utils.formatUnits(usdtMin, 18));
+                console.log('💵 USDT attendu:', ethers.utils.formatUnits(usdtExpected, usdtDecimals));
+                console.log('💵 USDT minimum:', ethers.utils.formatUnits(usdtMin, usdtDecimals));
                 
                 if (usdtMin.isZero()) {
                     throw new Error('❌ Le montant de vente est trop faible (< 0.01 USDT). Augmentez le capital de trading.');
