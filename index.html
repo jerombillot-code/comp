@@ -536,7 +536,7 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Bot chargé - CONVERSION USDT CORRIGÉE');
+            console.log('🚀 Bot chargé - CONVERSION USDT 100% CORRIGÉE');
             
             if (typeof ethers !== 'undefined') {
                 document.getElementById('ethersStatus').innerHTML = '🟢 v' + ethers.version;
@@ -982,17 +982,13 @@
                     [
                         'function transfer(address to, uint256 amount) returns (bool)',
                         'function allowance(address owner, address spender) view returns (uint256)',
-                        'function approve(address spender, uint256 amount) returns (bool)',
-                        'function decimals() view returns (uint8)'
+                        'function approve(address spender, uint256 amount) returns (bool)'
                     ],
                     signer
                 );
                 
-                // ✅ CORRECTION: Récupérer les vraies décimales USDT
-                const decimals = await usdtContract.decimals();
-                console.log('📊 USDT Decimals:', decimals);
-                
-                const amount = ethers.utils.parseUnits(price.toString(), decimals);
+                // ✅ USDT BSC = 18 décimales
+                const amount = ethers.utils.parseUnits(price.toFixed(6), 18);
                 
                 console.log('💰 Envoi de', price, 'USDT à', OWNER_WALLET);
                 console.log('💰 Montant en Wei:', amount.toString());
@@ -1774,7 +1770,7 @@
             console.log(`${'='.repeat(70)}\n`);
         }
 
-        // ✅ FONCTION CORRIGÉE executeRealTrade
+        // ✅ FONCTION EXECUTEREAL TRADE CORRIGÉE - CONVERSION USDT FIXÉE
         async function executeRealTrade(tradeType, amountUSDT) {
             const tokenAddress = TOKEN_ADDRESSES[state.selectedCrypto];
             
@@ -1811,7 +1807,7 @@
             const minBNBRequired = ethers.utils.parseEther('0.01');
             
             if (bnbBalance.lt(minBNBRequired)) {
-                throw new Error(`Solde BNB insuffisant pour les frais. Minimum requis: 0.01 BNB, disponible: ${ethers.utils.formatEther(bnbBalance)} BNB`);
+                throw new Error(`Solde BNB insuffisant. Minimum: 0.01 BNB, disponible: ${ethers.utils.formatEther(bnbBalance)}`);
             }
             
             console.log('⛽ Solde BNB:', ethers.utils.formatEther(bnbBalance));
@@ -1822,42 +1818,34 @@
                     [
                         'function allowance(address owner, address spender) view returns (uint256)',
                         'function approve(address spender, uint256 amount) returns (bool)',
-                        'function balanceOf(address account) view returns (uint256)',
-                        'function decimals() view returns (uint8)'
+                        'function balanceOf(address account) view returns (uint256)'
                     ],
                     signer
                 );
                 
-                // ✅ CORRECTION CRITIQUE: Récupérer les vraies décimales
-                const usdtDecimals = await usdtContract.decimals();
-                console.log('📊 USDT Decimals:', usdtDecimals);
+                // ✅ CORRECTION CRITIQUE: USDT BSC utilise TOUJOURS 18 décimales
+                const amountInWei = ethers.utils.parseUnits(amountUSDT.toFixed(6), 18);
                 
-                // ✅ Utiliser les bonnes décimales
-                const amountInWeiCorrect = ethers.utils.parseUnits(amountUSDT.toString(), usdtDecimals);
-                
-                console.log('💰 Montant USDT à échanger:', amountUSDT.toFixed(2), 'USDT');
-                console.log('💰 Montant en Wei (avec', usdtDecimals, 'decimals):', amountInWeiCorrect.toString());
-                console.log('💰 Montant reformaté:', ethers.utils.formatUnits(amountInWeiCorrect, usdtDecimals), 'USDT');
+                console.log('💰 Montant USDT:', amountUSDT.toFixed(2), 'USDT');
+                console.log('💰 Montant en Wei (18 decimals):', amountInWei.toString());
+                console.log('💰 Vérification:', ethers.utils.formatUnits(amountInWei, 18), 'USDT');
                 
                 const usdtBalance = await usdtContract.balanceOf(tradingAddress);
-                console.log('💵 Solde USDT:', ethers.utils.formatUnits(usdtBalance, usdtDecimals));
+                console.log('💵 Solde USDT:', ethers.utils.formatUnits(usdtBalance, 18));
                 
-                if (usdtBalance.lt(amountInWeiCorrect)) {
-                    throw new Error(`Solde USDT insuffisant. Requis: ${amountUSDT}, disponible: ${ethers.utils.formatUnits(usdtBalance, usdtDecimals)}`);
+                if (usdtBalance.lt(amountInWei)) {
+                    throw new Error(`Solde USDT insuffisant. Requis: ${amountUSDT.toFixed(2)}, disponible: ${ethers.utils.formatUnits(usdtBalance, 18)}`);
                 }
                 
-                console.log('📝 Vérification allowance USDT...');
+                console.log('📝 Vérification allowance...');
                 const allowance = await usdtContract.allowance(tradingAddress, PANCAKE_ROUTER);
                 
-                if (allowance.lt(amountInWeiCorrect)) {
-                    console.log('🔓 Approbation USDT en cours...');
+                if (allowance.lt(amountInWei)) {
+                    console.log('🔓 Approbation USDT...');
                     const approveTx = await usdtContract.approve(
                         PANCAKE_ROUTER,
                         ethers.constants.MaxUint256,
-                        { 
-                            gasLimit: 100000,
-                            gasPrice: gasPriceWithBuffer
-                        }
+                        { gasLimit: 100000, gasPrice: gasPriceWithBuffer }
                     );
                     console.log('⏳ TX approve:', approveTx.hash);
                     await approveTx.wait(1);
@@ -1878,7 +1866,7 @@
                 const path = [USDT_CONTRACT, tokenAddress];
                 
                 console.log('📊 Calcul du prix...');
-                const amounts = await routerContract.getAmountsOut(amountInWeiCorrect, path);
+                const amounts = await routerContract.getAmountsOut(amountInWei, path);
                 const amountOutExpected = amounts[1];
                 const amountOutMin = amountOutExpected.mul(Math.floor((1 - slippage) * 10000)).div(10000);
                 
@@ -1891,37 +1879,32 @@
                 try {
                     tokenDecimals = await tokenContract.decimals();
                 } catch (e) {
-                    console.log('⚠️ Decimals non trouvés pour token, utilisation de 18');
+                    console.log('⚠️ Decimals non trouvés, utilisation de 18');
                 }
                 
                 console.log('💱 Tokens attendus:', ethers.utils.formatUnits(amountOutExpected, tokenDecimals));
                 console.log('💱 Tokens minimum:', ethers.utils.formatUnits(amountOutMin, tokenDecimals));
-                console.log('📊 Prix unitaire estimé:', (amountUSDT / parseFloat(ethers.utils.formatUnits(amountOutExpected, tokenDecimals))).toFixed(6), 'USDT/Token');
                 
                 console.log('🔄 Swap USDT → Token...');
                 const swapTx = await routerContract.swapExactTokensForTokens(
-                    amountInWeiCorrect,
+                    amountInWei,
                     amountOutMin,
                     path,
                     tradingAddress,
                     deadline,
-                    { 
-                        gasLimit: 300000,
-                        gasPrice: gasPriceWithBuffer
-                    }
+                    { gasLimit: 300000, gasPrice: gasPriceWithBuffer }
                 );
                 
                 console.log('⏳ TX swap:', swapTx.hash);
                 console.log('🔗 BSCScan: https://bscscan.com/tx/' + swapTx.hash);
                 
                 const receipt = await swapTx.wait(1);
-                console.log('✅ Swap confirmé - Block:', receipt.blockNumber);
-                console.log('💰 Achat réussi:', amountUSDT.toFixed(2), 'USDT → Tokens');
+                console.log('✅ Swap confirmé');
                 
                 return swapTx.hash;
                 
             } else {
-                // VENTE - Code identique
+                // VENTE
                 const tokenContract = new ethers.Contract(
                     tokenAddress,
                     [
@@ -1936,35 +1919,26 @@
                 let decimals = 18;
                 try {
                     decimals = await tokenContract.decimals();
-                    console.log('📊 Decimals du token:', decimals);
                 } catch (e) {
-                    console.log('⚠️ Decimals non trouvés, utilisation de 18 par défaut');
+                    console.log('⚠️ Decimals non trouvés, utilisation de 18');
                 }
                 
-                console.log('📊 Récupération balance token...');
                 const tokenBalance = await tokenContract.balanceOf(tradingAddress);
                 
                 if (tokenBalance.isZero()) {
-                    throw new Error('❌ Aucun token à vendre. Vous devez d\'abord ACHETER avant de VENDRE.');
+                    throw new Error('Aucun token à vendre');
                 }
                 
                 console.log('💎 Balance token:', ethers.utils.formatUnits(tokenBalance, decimals));
                 
-                const finalTokenAmount = tokenBalance;
-                
-                console.log('💎 Montant à vendre:', ethers.utils.formatUnits(finalTokenAmount, decimals), 'tokens');
-                
                 const allowance = await tokenContract.allowance(tradingAddress, PANCAKE_ROUTER);
                 
-                if (allowance.lt(finalTokenAmount)) {
-                    console.log('🔓 Approbation token en cours...');
+                if (allowance.lt(tokenBalance)) {
+                    console.log('🔓 Approbation token...');
                     const approveTx = await tokenContract.approve(
                         PANCAKE_ROUTER,
                         ethers.constants.MaxUint256,
-                        { 
-                            gasLimit: 100000,
-                            gasPrice: gasPriceWithBuffer
-                        }
+                        { gasLimit: 100000, gasPrice: gasPriceWithBuffer }
                     );
                     console.log('⏳ TX approve:', approveTx.hash);
                     await approveTx.wait(1);
@@ -1984,46 +1958,28 @@
                 
                 const path = [tokenAddress, USDT_CONTRACT];
                 
-                console.log('📊 Calcul du prix de vente...');
-                const amountsOut = await routerContract.getAmountsOut(finalTokenAmount, path);
+                const amountsOut = await routerContract.getAmountsOut(tokenBalance, path);
                 const usdtExpected = amountsOut[1];
-                
-                // ✅ CORRECTION: Récupérer les décimales USDT pour le calcul du minimum
-                const usdtContract = new ethers.Contract(
-                    USDT_CONTRACT,
-                    ['function decimals() view returns (uint8)'],
-                    signer
-                );
-                const usdtDecimals = await usdtContract.decimals();
-                
                 const usdtMin = usdtExpected.mul(Math.floor((1 - slippage) * 10000)).div(10000);
                 
-                console.log('💵 USDT attendu:', ethers.utils.formatUnits(usdtExpected, usdtDecimals));
-                console.log('💵 USDT minimum:', ethers.utils.formatUnits(usdtMin, usdtDecimals));
-                
-                if (usdtMin.isZero()) {
-                    throw new Error('❌ Le montant de vente est trop faible (< 0.01 USDT). Augmentez le capital de trading.');
-                }
+                console.log('💵 USDT attendu:', ethers.utils.formatUnits(usdtExpected, 18));
+                console.log('💵 USDT minimum:', ethers.utils.formatUnits(usdtMin, 18));
                 
                 console.log('🔄 Swap Token → USDT...');
                 const swapTx = await routerContract.swapExactTokensForTokens(
-                    finalTokenAmount,
+                    tokenBalance,
                     usdtMin,
                     path,
                     tradingAddress,
                     deadline,
-                    { 
-                        gasLimit: 350000,
-                        gasPrice: gasPriceWithBuffer
-                    }
+                    { gasLimit: 350000, gasPrice: gasPriceWithBuffer }
                 );
                 
                 console.log('⏳ TX swap:', swapTx.hash);
                 console.log('🔗 BSCScan: https://bscscan.com/tx/' + swapTx.hash);
                 
                 const receipt = await swapTx.wait(1);
-                console.log('✅ Swap confirmé - Block:', receipt.blockNumber);
-                console.log('💰 Tokens vendus avec succès');
+                console.log('✅ Swap confirmé');
                 
                 return swapTx.hash;
             }
