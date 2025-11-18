@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+                         <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +34,7 @@
                 <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
                     🐱 Bot Trading Multi-Crypto Pro - 6 Indicateurs
                 </h1>
-                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE • Trailing 0.5% • TP 3.5% • SL 3% • 6 Indicateurs (3 requis) • 📱 Telegram</p>
+                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE • Trailing 0.5% (actif après +2%) • TP 3.5% • SL 3% • 6 Indicateurs (3 requis) • 📱 Telegram</p>
             </div>
             
             <div class="flex gap-3">
@@ -1642,7 +1643,7 @@
             state.capitalSet = true;
             
             updateUI();
-            alert(`✅ Capital défini: ${capital} USDT\n\n🎯 Paramètres de trading:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 6 indicateurs (3 minimum requis)`);
+            alert(`✅ Capital défini: ${capital} USDT\n\n🎯 Paramètres de trading:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5% (actif après +2%)\n\n✅ 6 indicateurs (3 minimum requis)`);
         }
 
         function setMaxCapital() {
@@ -1732,7 +1733,7 @@
                 startBot();
                 const mode = state.tradingMode === 'real' ? 'RÉEL ⚠️' : 'SIMULATION';
                 const type = state.autoMode ? 'Automatique 24/7' : 'Manuel';
-                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n\n🎯 Paramètres:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 6 indicateurs (3/6 requis) + VENTE COMPLÈTE`);
+                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n\n🎯 Paramètres:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5% (après +2%)\n\n✅ 6 indicateurs (3/6 requis) + VENTE COMPLÈTE`);
             } else {
                 stopBot();
             }
@@ -1759,7 +1760,7 @@
             console.log(`\n🎯 PARAMÈTRES DE SORTIE:`);
             console.log(`   • Take Profit: +${strategy.takeProfit}%`);
             console.log(`   • Stop Loss: ${strategy.stopLoss}%`);
-            console.log(`   • Trailing Stop: ${strategy.trailingStop}% (depuis le plus haut)`);
+            console.log(`   • Trailing Stop: ${strategy.trailingStop}% (actif après +2%)`);
             console.log(`\n✅ VENTE COMPLÈTE DU SOLDE TOKEN ACTIVÉE`);
             console.log(`✅ 6 INDICATEURS: RSI, MACD, EMA, Volume, Bollinger, Stoch RSI`);
             console.log(`✅ 3 MINIMUM REQUIS pour déclencher un ACHAT`);
@@ -1776,7 +1777,7 @@
                     `🎯 <b>Paramètres:</b>\n` +
                     `• Take Profit: +${strategy.takeProfit}%\n` +
                     `• Stop Loss: ${strategy.stopLoss}%\n` +
-                    `• Trailing Stop: ${strategy.trailingStop}%\n` +
+                    `• Trailing Stop: ${strategy.trailingStop}% (actif après +2%)\n` +
                     `• Cooldown: ${intervalDisplay}\n\n` +
                     `📊 <b>6 Indicateurs (3 requis):</b>\n` +
                     `RSI, MACD, EMA, Volume, Bollinger, Stoch RSI\n\n` +
@@ -1889,27 +1890,37 @@
                 }
                 
                 const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
+                const profitFromHighest = ((state.highestPriceReached - state.lastBuyPrice) / state.lastBuyPrice) * 100;
                 const dropFromHighest = ((state.currentPrice - state.highestPriceReached) / state.highestPriceReached) * 100;
                 
-                // Stop Loss : -3%
+                // 1. Stop Loss : -3%
                 if (profitPercent <= strategy.stopLoss) {
                     console.log(`🛑 SIGNAL VENTE (Stop Loss): ${profitPercent.toFixed(2)}%`);
                     return { signal: 'SELL', confidence: 0.95, reason: 'Stop Loss' };
                 }
                 
-                // Trailing Stop : baisse de 0.5% depuis le plus haut
-                if (dropFromHighest <= -strategy.trailingStop) {
-                    const profitFromHighest = ((state.highestPriceReached - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                    console.log(`📉 SIGNAL VENTE (Trailing Stop): Prix a baissé de ${Math.abs(dropFromHighest).toFixed(2)}% depuis le plus haut`);
-                    console.log(`   Plus haut: $${state.highestPriceReached.toFixed(6)} (+${profitFromHighest.toFixed(2)}%)`);
-                    console.log(`   Actuel: $${state.currentPrice.toFixed(6)} (+${profitPercent.toFixed(2)}%)`);
-                    return { signal: 'SELL', confidence: 0.95, reason: 'Trailing Stop' };
-                }
-                
-                // Take Profit : +3.5%
+                // 2. Take Profit : +3.5%
                 if (profitPercent >= strategy.takeProfit) {
                     console.log(`🎯 SIGNAL VENTE (Take Profit): ${profitPercent.toFixed(2)}%`);
                     return { signal: 'SELL', confidence: 0.95, reason: 'Take Profit' };
+                }
+                
+                // 3. Trailing Stop : SEULEMENT si profit > +2% ET baisse de 0.5% depuis le plus haut
+                const TRAILING_ACTIVATION_THRESHOLD = 2.0; // Le trailing stop s'active après +2% de profit
+                
+                if (profitFromHighest >= TRAILING_ACTIVATION_THRESHOLD) {
+                    if (dropFromHighest <= -strategy.trailingStop) {
+                        console.log(`📉 SIGNAL VENTE (Trailing Stop): Prix a baissé de ${Math.abs(dropFromHighest).toFixed(2)}% depuis le plus haut`);
+                        console.log(`   Plus haut: $${state.highestPriceReached.toFixed(6)} (+${profitFromHighest.toFixed(2)}%)`);
+                        console.log(`   Actuel: $${state.currentPrice.toFixed(6)} (+${profitPercent.toFixed(2)}%)`);
+                        console.log(`   ✅ Trailing actif (plus haut > +${TRAILING_ACTIVATION_THRESHOLD}%)`);
+                        return { signal: 'SELL', confidence: 0.95, reason: 'Trailing Stop' };
+                    }
+                } else {
+                    // Afficher un log pour savoir que le trailing est en attente
+                    if (profitPercent > 1 && Math.random() < 0.1) { // Log occasionnel pour ne pas polluer
+                        console.log(`⏳ Trailing Stop en attente - Plus haut: +${profitFromHighest.toFixed(2)}% (besoin de +${TRAILING_ACTIVATION_THRESHOLD}%)`);
+                    }
                 }
                 
                 return { signal: null, confidence: 0 };
@@ -1982,7 +1993,7 @@
                 state.highestPriceReached = executionPrice;
                 state.positionAmount = tradeAmountUSDT;
                 console.log(`📈 POSITION OUVERTE`);
-                console.log(`🎯 Take Profit: +3.5% | Stop Loss: -3.0% | Trailing Stop: 0.5%`);
+                console.log(`🎯 Take Profit: +3.5% | Stop Loss: -3.0% | Trailing Stop: 0.5% (actif après +2%)`);
                 
                 // Notification Telegram
                 if (state.telegram.enabled) {
@@ -2003,7 +2014,7 @@
                         `📊 Stratégie: ${strategies[state.selectedStrategy].name}\n` +
                         `🤖 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}\n\n` +
                         `✅ <b>${activeIndicators.length}/6 Indicateurs:</b>\n${activeIndicators.join(', ')}\n\n` +
-                        `🎯 TP: +3.5% | SL: -3.0% | Trailing: 0.5%\n` +
+                        `🎯 TP: +3.5% | SL: -3.0% | Trailing: 0.5% (actif après +2%)\n` +
                         `⏰ ${new Date().toLocaleString('fr-FR')}`;
                     sendTelegramMessage(telegramMsg);
                 }
