@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Trading Multi-Crypto Pro - TP 3.5% | Trailing Stop 0.5%</title>
+    <title>Bot Trading Multi-Crypto Pro - 6 Indicateurs | TP 3.5% | Trailing 0.5%</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -31,9 +31,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                    🐱 Bot Trading Multi-Crypto Pro - TP 3.5% | Trailing 0.5%
+                    🐱 Bot Trading Multi-Crypto Pro - 6 Indicateurs
                 </h1>
-                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE • Trailing Stop 0.5% • TP 3.5% • SL 3% • 3 Conditions • 📱 Notifications Telegram</p>
+                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE • Trailing 0.5% • TP 3.5% • SL 3% • 6 Indicateurs (3 requis) • 📱 Telegram</p>
             </div>
             
             <div class="flex gap-3">
@@ -60,7 +60,7 @@
         <div class="glass-effect rounded-xl p-6 mb-6 border-2 border-blue-500">
             <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
                 <span>🎯</span>
-                Conditions de Trading (3 requis pour ACHAT)
+                Conditions de Trading (3 requis parmi 6 indicateurs)
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -90,11 +90,39 @@
                     <p class="text-xs text-gray-400">Prix &gt; EMA20</p>
                     <p class="text-sm mt-2">EMA20: <span id="ema-display" class="font-bold">--</span></p>
                 </div>
+
+                <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-volume">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold">📊 Volume Fort</span>
+                        <span class="text-2xl" id="condition-volume-icon">⚪</span>
+                    </div>
+                    <p class="text-xs text-gray-400">Volume &gt; Moyenne</p>
+                    <p class="text-sm mt-2">Ratio: <span id="volume-display" class="font-bold">--</span></p>
+                </div>
+
+                <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-bb">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold">📉 Bollinger Bas</span>
+                        <span class="text-2xl" id="condition-bb-icon">⚪</span>
+                    </div>
+                    <p class="text-xs text-gray-400">Prix près bande basse</p>
+                    <p class="text-sm mt-2">Position: <span id="bb-display" class="font-bold">--</span>%</p>
+                </div>
+
+                <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-stoch">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold">⚡ Stoch RSI Bas</span>
+                        <span class="text-2xl" id="condition-stoch-icon">⚪</span>
+                    </div>
+                    <p class="text-xs text-gray-400">Stoch RSI &lt; 20</p>
+                    <p class="text-sm mt-2">Valeur: <span id="stoch-display" class="font-bold">--</span></p>
+                </div>
             </div>
 
             <div class="mt-4 p-4 bg-green-500/20 border border-green-500 rounded-lg">
                 <p class="text-center font-bold text-lg">
-                    <span class="text-green-400" id="conditions-count">0/3</span> conditions validées
+                    <span class="text-green-400" id="conditions-count">0/6</span> conditions validées
+                    <span class="text-yellow-400 ml-2">(3 minimum requis)</span>
                 </p>
                 <div class="w-full h-3 bg-slate-700 rounded-full mt-2 overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-300" id="conditions-progress" style="width: 0%"></div>
@@ -512,7 +540,16 @@
             botRunning: false, 
             trades: [], 
             portfolio: { profit: 0, profitPercent: 0 },
-            indicators: { rsi: 50, macd: { histogram: 0 }, ema20: 0, ema50: 0 },
+            indicators: { 
+                rsi: 50, 
+                macd: { histogram: 0 }, 
+                ema20: 0, 
+                ema50: 0,
+                volume: 0,
+                volumeAvg: 0,
+                bollingerBands: { upper: 0, middle: 0, lower: 0 },
+                stochRSI: 50
+            },
             selectedStrategy: 'scalping', 
             provider: null,
             privateKey: null,
@@ -534,7 +571,10 @@
             buyConditions: {
                 rsi: false,
                 macd: false,
-                ema: false
+                ema: false,
+                volume: false,
+                bollingerBands: false,
+                stochRSI: false
             },
             tokenDecimals: 18,
             telegram: {
@@ -600,8 +640,10 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Bot chargé - VERSION AVEC TRAILING STOP');
+            console.log('🚀 Bot chargé - VERSION AVEC 6 INDICATEURS');
             console.log('🎯 Paramètres: TP +3.5% | SL -3.0% | Trailing 0.5%');
+            console.log('📊 Indicateurs: RSI, MACD, EMA, Volume, Bollinger, Stoch RSI');
+            console.log('✅ 3 indicateurs minimum requis pour ACHAT');
             console.log('✅ Vente complète du solde token activée');
             
             if (typeof ethers !== 'undefined') {
@@ -777,7 +819,8 @@
             console.log(`   • Stop Loss: ${newStrategy.stopLoss}%`);
             console.log(`   • Trailing Stop: ${newStrategy.trailingStop}%`);
             console.log(`   • Cooldown: ${intervalDisplay} entre chaque trade`);
-            console.log(`   • ✅ 3 CONDITIONS REQUISES POUR ACHAT`);
+            console.log(`   • ✅ 6 INDICATEURS: RSI, MACD, EMA, Volume, Bollinger, Stoch RSI`);
+            console.log(`   • ✅ 3 MINIMUM REQUIS pour ACHAT`);
             console.log(`${'='.repeat(70)}\n`);
         }
 
@@ -1375,6 +1418,7 @@
             ws.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 state.currentPrice = parseFloat(data.c);
+                state.indicators.volume = parseFloat(data.v);
                 
                 state.priceHistory.push(state.currentPrice);
                 if (state.priceHistory.length > 100) state.priceHistory.shift();
@@ -1395,14 +1439,23 @@
             state.indicators.rsi = calculateRSI(state.priceHistory);
             state.indicators.macd = calculateMACD(state.priceHistory);
             state.indicators.ema20 = calculateEMA(state.priceHistory, 20);
+            state.indicators.bollingerBands = calculateBollingerBands(state.priceHistory, 20, 2);
+            state.indicators.stochRSI = calculateStochRSI(state.priceHistory);
+            
+            // Calculer la moyenne du volume sur les 20 derniers prix
+            if (state.indicators.volume > 0) {
+                const recentVolumes = [state.indicators.volume];
+                state.indicators.volumeAvg = recentVolumes.reduce((a, b) => a + b, 0) / recentVolumes.length;
+            }
             
             updateBuyConditionsUI();
         }
 
         function updateBuyConditionsUI() {
-            const { rsi, macd, ema20 } = state.indicators;
+            const { rsi, macd, ema20, volume, volumeAvg, bollingerBands, stochRSI } = state.indicators;
             const strategy = strategies[state.selectedStrategy];
             
+            // RSI
             state.buyConditions.rsi = rsi < strategy.rsiBuyThreshold;
             document.getElementById('rsi-display').textContent = rsi.toFixed(1);
             document.getElementById('condition-rsi-icon').textContent = state.buyConditions.rsi ? '✅' : '⚪';
@@ -1410,6 +1463,7 @@
                 ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
                 : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
             
+            // MACD
             state.buyConditions.macd = macd.histogram > 0;
             document.getElementById('macd-display').textContent = macd.histogram.toFixed(4);
             document.getElementById('condition-macd-icon').textContent = state.buyConditions.macd ? '✅' : '⚪';
@@ -1417,6 +1471,7 @@
                 ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
                 : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
             
+            // EMA
             state.buyConditions.ema = state.currentPrice > ema20;
             document.getElementById('ema-display').textContent = '$' + ema20.toFixed(2);
             document.getElementById('condition-ema-icon').textContent = state.buyConditions.ema ? '✅' : '⚪';
@@ -1424,9 +1479,37 @@
                 ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
                 : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
             
+            // Volume
+            state.buyConditions.volume = volume > volumeAvg || volumeAvg === 0;
+            const volumeRatio = volumeAvg > 0 ? (volume / volumeAvg).toFixed(2) : '1.00';
+            document.getElementById('volume-display').textContent = volumeRatio + 'x';
+            document.getElementById('condition-volume-icon').textContent = state.buyConditions.volume ? '✅' : '⚪';
+            document.getElementById('condition-volume').className = state.buyConditions.volume 
+                ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
+                : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
+            
+            // Bollinger Bands - Prix proche de la bande basse (< 30% de la bande)
+            const bbRange = bollingerBands.upper - bollingerBands.lower;
+            const bbPosition = bbRange > 0 ? ((state.currentPrice - bollingerBands.lower) / bbRange) * 100 : 50;
+            state.buyConditions.bollingerBands = bbPosition < 30;
+            document.getElementById('bb-display').textContent = bbPosition.toFixed(0);
+            document.getElementById('condition-bb-icon').textContent = state.buyConditions.bollingerBands ? '✅' : '⚪';
+            document.getElementById('condition-bb').className = state.buyConditions.bollingerBands 
+                ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
+                : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
+            
+            // Stochastic RSI
+            state.buyConditions.stochRSI = stochRSI < 20;
+            document.getElementById('stoch-display').textContent = stochRSI.toFixed(1);
+            document.getElementById('condition-stoch-icon').textContent = state.buyConditions.stochRSI ? '✅' : '⚪';
+            document.getElementById('condition-stoch').className = state.buyConditions.stochRSI 
+                ? 'bg-green-500/30 border-2 border-green-500 rounded-lg p-4' 
+                : 'glass-effect border-2 border-slate-600 rounded-lg p-4';
+            
+            // Compteur total
             const validConditions = Object.values(state.buyConditions).filter(c => c).length;
-            document.getElementById('conditions-count').textContent = `${validConditions}/3`;
-            document.getElementById('conditions-progress').style.width = `${(validConditions / 3) * 100}%`;
+            document.getElementById('conditions-count').textContent = `${validConditions}/6`;
+            document.getElementById('conditions-progress').style.width = `${(validConditions / 6) * 100}%`;
         }
 
         function calculateRSI(prices, period = 14) {
@@ -1467,6 +1550,45 @@
             }
 
             return ema;
+        }
+
+        function calculateBollingerBands(prices, period = 20, stdDev = 2) {
+            if (prices.length < period) return { upper: 0, middle: 0, lower: 0 };
+            
+            const recentPrices = prices.slice(-period);
+            const middle = recentPrices.reduce((a, b) => a + b, 0) / period;
+            
+            const squaredDiffs = recentPrices.map(price => Math.pow(price - middle, 2));
+            const variance = squaredDiffs.reduce((a, b) => a + b, 0) / period;
+            const standardDeviation = Math.sqrt(variance);
+            
+            return {
+                upper: middle + (standardDeviation * stdDev),
+                middle: middle,
+                lower: middle - (standardDeviation * stdDev)
+            };
+        }
+
+        function calculateStochRSI(prices, period = 14) {
+            if (prices.length < period + 1) return 50;
+            
+            const rsi = calculateRSI(prices, period);
+            const rsiValues = [];
+            
+            // Calculer RSI sur les dernières périodes
+            for (let i = period; i < prices.length; i++) {
+                rsiValues.push(calculateRSI(prices.slice(0, i + 1), period));
+            }
+            
+            if (rsiValues.length < period) return 50;
+            
+            const recentRSI = rsiValues.slice(-period);
+            const maxRSI = Math.max(...recentRSI);
+            const minRSI = Math.min(...recentRSI);
+            
+            if (maxRSI === minRSI) return 50;
+            
+            return ((rsi - minRSI) / (maxRSI - minRSI)) * 100;
         }
 
         function setCapital() {
@@ -1520,7 +1642,7 @@
             state.capitalSet = true;
             
             updateUI();
-            alert(`✅ Capital défini: ${capital} USDT\n\n🎯 Paramètres de trading:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 3 conditions requises pour ACHAT`);
+            alert(`✅ Capital défini: ${capital} USDT\n\n🎯 Paramètres de trading:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 6 indicateurs (3 minimum requis)`);
         }
 
         function setMaxCapital() {
@@ -1610,7 +1732,7 @@
                 startBot();
                 const mode = state.tradingMode === 'real' ? 'RÉEL ⚠️' : 'SIMULATION';
                 const type = state.autoMode ? 'Automatique 24/7' : 'Manuel';
-                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n\n🎯 Paramètres:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 3 CONDITIONS + VENTE COMPLÈTE`);
+                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n\n🎯 Paramètres:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 6 indicateurs (3/6 requis) + VENTE COMPLÈTE`);
             } else {
                 stopBot();
             }
@@ -1639,7 +1761,8 @@
             console.log(`   • Stop Loss: ${strategy.stopLoss}%`);
             console.log(`   • Trailing Stop: ${strategy.trailingStop}% (depuis le plus haut)`);
             console.log(`\n✅ VENTE COMPLÈTE DU SOLDE TOKEN ACTIVÉE`);
-            console.log(`✅ 3 CONDITIONS REQUISES: RSI < ${strategy.rsiBuyThreshold}, MACD > 0, Prix > EMA20`);
+            console.log(`✅ 6 INDICATEURS: RSI, MACD, EMA, Volume, Bollinger, Stoch RSI`);
+            console.log(`✅ 3 MINIMUM REQUIS pour déclencher un ACHAT`);
             console.log(`${'='.repeat(70)}\n`);
             
             // Notification Telegram
@@ -1655,6 +1778,8 @@
                     `• Stop Loss: ${strategy.stopLoss}%\n` +
                     `• Trailing Stop: ${strategy.trailingStop}%\n` +
                     `• Cooldown: ${intervalDisplay}\n\n` +
+                    `📊 <b>6 Indicateurs (3 requis):</b>\n` +
+                    `RSI, MACD, EMA, Volume, Bollinger, Stoch RSI\n\n` +
                     `⏰ ${new Date().toLocaleString('fr-FR')}`;
                 sendTelegramMessage(telegramMsg);
             }
@@ -1677,7 +1802,7 @@
                     
                     if (logCounter % 10 === 0) {
                         const validCond = Object.values(state.buyConditions).filter(c => c).length;
-                        console.log(`⏰ Cooldown: ${timeDisplay} | Prix: $${state.currentPrice.toFixed(6)} | Conditions: ${validCond}/3 | Position: ${state.currentPosition ? '🟢 LONG' : '⚪ AUCUNE'}`);
+                        console.log(`⏰ Cooldown: ${timeDisplay} | Prix: $${state.currentPrice.toFixed(6)} | Conditions: ${validCond}/6 | Position: ${state.currentPosition ? '🟢 LONG' : '⚪ AUCUNE'}`);
                     }
                     logCounter++;
                     return;
@@ -1691,7 +1816,7 @@
                 } else {
                     if (logCounter % 10 === 0 && !signal.signal) {
                         const validCond = Object.values(state.buyConditions).filter(c => c).length;
-                        console.log(`⏳ Recherche signal... Prix: $${state.currentPrice.toFixed(6)} | Conditions: ${validCond}/3 | Position: ${state.currentPosition ? '🟢 LONG' : '⚪ AUCUNE'}`);
+                        console.log(`⏳ Recherche signal... Prix: $${state.currentPrice.toFixed(6)} | Conditions: ${validCond}/6 | Position: ${state.currentPosition ? '🟢 LONG' : '⚪ AUCUNE'}`);
                     }
                     logCounter++;
                 }
@@ -1740,7 +1865,18 @@
                 const validConditions = Object.values(state.buyConditions).filter(c => c).length;
                 
                 if (validConditions >= 3) {
-                    console.log(`✅ 3/3 CONDITIONS VALIDÉES - SIGNAL D'ACHAT`);
+                    console.log(`✅ ${validConditions}/6 CONDITIONS VALIDÉES - SIGNAL D'ACHAT`);
+                    
+                    // Afficher quels indicateurs sont validés
+                    const activeIndicators = [];
+                    if (state.buyConditions.rsi) activeIndicators.push('RSI');
+                    if (state.buyConditions.macd) activeIndicators.push('MACD');
+                    if (state.buyConditions.ema) activeIndicators.push('EMA');
+                    if (state.buyConditions.volume) activeIndicators.push('Volume');
+                    if (state.buyConditions.bollingerBands) activeIndicators.push('Bollinger');
+                    if (state.buyConditions.stochRSI) activeIndicators.push('Stoch RSI');
+                    console.log(`📊 Indicateurs validés: ${activeIndicators.join(', ')}`);
+                    
                     return { signal: 'BUY', confidence: 0.9 };
                 }
                 
@@ -1850,6 +1986,15 @@
                 
                 // Notification Telegram
                 if (state.telegram.enabled) {
+                    // Lister les indicateurs validés
+                    const activeIndicators = [];
+                    if (state.buyConditions.rsi) activeIndicators.push('RSI');
+                    if (state.buyConditions.macd) activeIndicators.push('MACD');
+                    if (state.buyConditions.ema) activeIndicators.push('EMA');
+                    if (state.buyConditions.volume) activeIndicators.push('Volume');
+                    if (state.buyConditions.bollingerBands) activeIndicators.push('Bollinger');
+                    if (state.buyConditions.stochRSI) activeIndicators.push('Stoch RSI');
+                    
                     const telegramMsg = 
                         `🟢 <b>ACHAT</b>\n\n` +
                         `💎 <b>${state.selectedCrypto.replace('USDT', '')}/USDT</b>\n` +
@@ -1857,6 +2002,7 @@
                         `💵 Prix: $${executionPrice.toFixed(6)}\n` +
                         `📊 Stratégie: ${strategies[state.selectedStrategy].name}\n` +
                         `🤖 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}\n\n` +
+                        `✅ <b>${activeIndicators.length}/6 Indicateurs:</b>\n${activeIndicators.join(', ')}\n\n` +
                         `🎯 TP: +3.5% | SL: -3.0% | Trailing: 0.5%\n` +
                         `⏰ ${new Date().toLocaleString('fr-FR')}`;
                     sendTelegramMessage(telegramMsg);
