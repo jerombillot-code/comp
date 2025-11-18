@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Trading Multi-Crypto Pro</title>
+    <title>Bot Trading Multi-Crypto Pro - CORRIGÉ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -31,9 +31,9 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                    🐱 Bot Trading Multi-Crypto Pro
+                    🐱 Bot Trading Multi-Crypto Pro - CORRIGÉ
                 </h1>
-                <p class="text-gray-400 mt-2">Trading réel BSC • Prix temps réel • Trading automatique 24/7 • 3 Conditions pour acheter ✅</p>
+                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE du solde • Prix temps réel • Trading automatique 24/7 • 3 Conditions ✅</p>
             </div>
             
             <div class="flex gap-3">
@@ -58,7 +58,6 @@
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Condition 1: RSI -->
                 <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-rsi">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold">📊 RSI Oversold</span>
@@ -68,7 +67,6 @@
                     <p class="text-sm mt-2">Valeur: <span id="rsi-display" class="font-bold">--</span></p>
                 </div>
 
-                <!-- Condition 2: MACD -->
                 <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-macd">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold">📈 MACD Positif</span>
@@ -78,7 +76,6 @@
                     <p class="text-sm mt-2">Valeur: <span id="macd-display" class="font-bold">--</span></p>
                 </div>
 
-                <!-- Condition 3: Prix vs EMA -->
                 <div class="glass-effect border-2 border-slate-600 rounded-lg p-4" id="condition-ema">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold">💹 Prix au-dessus EMA</span>
@@ -196,7 +193,6 @@
             </div>
         </div>
 
-        <!-- ✅ SECTION CLÉ PRIVÉE AMÉLIORÉE -->
         <div id="privateKeySection" class="glass-effect rounded-xl p-6 mb-6 border-2 border-yellow-500 hidden">
             <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
                 <span>🔐</span>
@@ -378,6 +374,7 @@
                             <p class="font-semibold text-green-400">Soldes</p>
                             <p>BNB: <span id="bnbBalance">0</span></p>
                             <p>USDT: $<span id="usdtBalance">0</span></p>
+                            <p>Token: <span id="tokenBalance">0</span></p>
                         </div>
                     </div>
                 </div>
@@ -426,6 +423,7 @@
             isConnected: false, 
             balanceBNB: '0', 
             balanceUSDT: '0',
+            balanceToken: '0',
             selectedCrypto: 'BTCUSDT', 
             cryptoList: [], 
             currentPrice: null, 
@@ -445,6 +443,7 @@
             currentPosition: null,
             lastBuyPrice: 0,
             positionAmount: 0,
+            positionTokenAmount: 0,
             lastSellTime: 0,
             chartData: { labels: [], prices: [], buyPoints: [], sellPoints: [] },
             subscription: {
@@ -457,7 +456,8 @@
                 rsi: false,
                 macd: false,
                 ema: false
-            }
+            },
+            tokenDecimals: 18
         };
 
         let ws = null, botInterval = null, lastTradeTime = 0;
@@ -465,39 +465,28 @@
 
         const POST_SELL_COOLDOWN = 120000;
 
-        const TOKEN_ADDRESSES = {
-            'BTCUSDT': '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c',
-            'ETHUSDT': '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
-            'BNBUSDT': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
-            'XRPUSDT': '0x1D2F0da169ceB9fC7B3144628dB4',
-            'ADAUSDT': '0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47',
-            'DOGEUSDT': '0xbA2aE424d960c26247Dd6c32edC70B295c744C43',
-            'SOLUSDT': '0x570A5D26f7765Ecb712C0924E4De545B89fD43dF',
-            'TRXUSDT': '0xCE7de646e7208a4Ef112cb6ed5038FA6cC6b12e3',
-            'DOTUSDT': '0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402',
-            'MATICUSDT': '0xCC42724C6683B7E57334c4E856f4c9965ED682bD',
-            'LINKUSDT': '0xF8A0BF9cF54Bb92F17374d9e9A321E6a111a51bD',
-            'AVAXUSDT': '0x1CE0c2827e2eF14D5C4f29a091d735A204794041',
-            'UNIUSDT': '0xBf5140A22578168FD562DCcF235E5D43A02ce9B1',
-            'SHIBUSDT': '0x2859e4544C4bB03966803b044A93563Bd2D0DD4D',
-            'LTCUSDT': '0x4338665CBB7B2485A8855A139b75D5e34AB0DB94',
-            'BCHUSDT': '0x8fF795a6F4D97E7887C79beA79aba5cc76444aDf',
-            'XLMUSDT': '0x43C934A845205F0b514417d757d7235B8f53f1B9',
-            'ATOMUSDT': '0x0Eb3a705fc54725037CC9e008bDede697f62F335',
-            'ETCUSDT': '0x3d6545b08693daE087E957cb1180ee38B9e3c25E',
-            'FILUSDT': '0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153',
-            'NEARUSDT': '0x1Fa4a73a3F0133f0025378af00236f3aBDEE5D63',
-            'AAVEUSDT': '0xfb6115445Bff7b52FeB98650C87f44907E58f802',
-            'VETUSDT': '0x6FDcdfef7c496407cCb0cEC90f9C5Aaa1Cc8D888',
-            'ALGOUSDT': '0xAC51066d7bEC65Dc4589368da368b212745d63E8',
-            'ICPUSDT': '0xa9c41A46a6B3531d28d5c32F6633dd2fF05dFB90',
-            'APTUSDT': '0x6970460aabF80C5BE983C6b74e5D06dEDCA95D4A',
-            'OPUSDT': '0xd3c325848d7c6E29b574Cb0789998b2ff901f17E',
-            'ARBUSDT': '0x912CE59144191C1204E64559FE8253a0e49E6548',
-            'FETUSDT': '0x031b41e504677879370e9DBcF937283A8691Fa7f',
-            'PEPEUSDT': '0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00',
-            'CAKEUSDT': '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82'
-        };
+     const TOKEN_ADDRESSES = {
+    'BNBUSDT': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    'CAKEUSDT': '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
+    'BTCUSDT': '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c',
+    'ETHUSDT': '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+    'BUSDUSDT': '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
+    'XRPUSDT': '0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE',
+    'ADAUSDT': '0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47',
+    'DOGEUSDT': '0xbA2aE424d960c26247Dd6c32edC70B295c744C43',
+    'DOTUSDT': '0x7083609fCE4d1d8Dc0C979AAb8c869Ea2C873402',
+    'MATICUSDT': '0xCC42724C6683B7E57334c4E856f4c9965ED682bD',
+    'UNIUSDT': '0xBf5140A22578168FD562DCcF235E5D43A02ce9B1',
+    'LINKUSDT': '0xF8A0BF9cF54Bb92F17374d9e9A321E6a111a51bD',
+    'LTCUSDT': '0x4338665CBB7B2485A8855A139b75D5e34AB0DB94',
+    'AVAXUSDT': '0x1CE0c2827e2eF14D5C4f29a091d735A204794041',
+    'ATOMUSDT': '0x0Eb3a705fc54725037CC9e008bDede697f62F335',
+    'XLMUSDT': '0x43C934A845205F0b514417d757d7235B8f53f1B9',
+    'FILUSDT': '0x0D8Ce2A99Bb6e3B7Db580eD848240e4a0F9aE153',
+    'TRXUSDT': '0x85EAC5Ac2F758618dFa09bDbe0cf174e7d574D5B',
+    'ETCUSDT': '0x3d6545b08693daE087E957cb1180ee38B9e3c25E',
+    'BCHUSDT': '0x8fF795a6F4D97E7887C79beA79aba5cc76444aDf'
+};
 
         const strategies = {
             scalping: { 
@@ -536,7 +525,7 @@
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Bot chargé - CONVERSION USDT 100% CORRIGÉE');
+            console.log('🚀 Bot chargé - VERSION CORRIGÉE - Vente complète du solde token');
             
             if (typeof ethers !== 'undefined') {
                 document.getElementById('ethersStatus').innerHTML = '🟢 v' + ethers.version;
@@ -767,6 +756,48 @@
             }
         }
 
+        // ✅ NOUVELLE FONCTION - Actualiser le solde token
+        async function updateTokenBalance() {
+            const tokenAddress = TOKEN_ADDRESSES[state.selectedCrypto];
+            if (!tokenAddress) return;
+            
+            try {
+                const address = state.wallet ? state.wallet.address : state.account;
+                const provider = state.wallet ? state.wallet.provider : state.provider;
+                
+                if (!address || !provider) return;
+                
+                const tokenContract = new ethers.Contract(
+                    tokenAddress,
+                    [
+                        'function balanceOf(address account) view returns (uint256)',
+                        'function decimals() view returns (uint8)',
+                        'function symbol() view returns (string)'
+                    ],
+                    provider
+                );
+                
+                // Récupérer les décimales du token
+                try {
+                    state.tokenDecimals = await tokenContract.decimals();
+                } catch (e) {
+                    state.tokenDecimals = 18;
+                    console.log('⚠️ Decimals non disponibles, utilisation de 18');
+                }
+                
+                const balance = await tokenContract.balanceOf(address);
+                state.balanceToken = ethers.utils.formatUnits(balance, state.tokenDecimals);
+                
+                document.getElementById('tokenBalance').textContent = parseFloat(state.balanceToken).toFixed(6);
+                
+                console.log(`💎 Balance ${state.selectedCrypto}: ${state.balanceToken} (${state.tokenDecimals} decimals)`);
+            } catch (error) {
+                console.error('❌ Erreur récupération balance token:', error);
+                state.balanceToken = '0';
+                state.tokenDecimals = 18;
+            }
+        }
+
         function checkSubscription() {
             const walletLower = state.account.toLowerCase();
             
@@ -834,8 +865,6 @@
                     }, 5000);
                     
                     return true;
-                } else {
-                    console.log('⚠️ Abonnement expiré');
                 }
             }
             
@@ -987,7 +1016,6 @@
                     signer
                 );
                 
-                // ✅ USDT BSC = 18 décimales
                 const amount = ethers.utils.parseUnits(price.toFixed(6), 18);
                 
                 console.log('💰 Envoi de', price, 'USDT à', OWNER_WALLET);
@@ -1120,6 +1148,7 @@
                 if (state.cryptoList.length > 0) {
                     state.selectedCrypto = state.cryptoList[0].symbol;
                     connectWebSocket();
+                    await updateTokenBalance();
                 }
                 
                 document.getElementById('cryptoCount').textContent = `(${state.cryptoList.length})`;
@@ -1150,34 +1179,7 @@
                 { symbol: 'BTCUSDT', name: 'BTC', price: 95000, priceChange: 2.5 },
                 { symbol: 'ETHUSDT', name: 'ETH', price: 3400, priceChange: 1.8 },
                 { symbol: 'BNBUSDT', name: 'BNB', price: 650, priceChange: -0.5 },
-                { symbol: 'XRPUSDT', name: 'XRP', price: 2.8, priceChange: 5.1 },
-                { symbol: 'ADAUSDT', name: 'ADA', price: 1.1, priceChange: -1.2 },
-                { symbol: 'DOGEUSDT', name: 'DOGE', price: 0.42, priceChange: 8.5 },
-                { symbol: 'SOLUSDT', name: 'SOL', price: 240, priceChange: 3.2 },
-                { symbol: 'TRXUSDT', name: 'TRX', price: 0.26, priceChange: 2.1 },
-                { symbol: 'DOTUSDT', name: 'DOT', price: 9.5, priceChange: -0.8 },
-                { symbol: 'MATICUSDT', name: 'MATIC', price: 0.58, priceChange: 1.5 },
-                { symbol: 'LINKUSDT', name: 'LINK', price: 23.5, priceChange: 0.9 },
-                { symbol: 'AVAXUSDT', name: 'AVAX', price: 48.2, priceChange: 4.2 },
-                { symbol: 'UNIUSDT', name: 'UNI', price: 15.8, priceChange: -2.1 },
-                { symbol: 'SHIBUSDT', name: 'SHIB', price: 0.000028, priceChange: 4.5 },
-                { symbol: 'LTCUSDT', name: 'LTC', price: 110, priceChange: 1.2 },
-                { symbol: 'BCHUSDT', name: 'BCH', price: 520, priceChange: -1.8 },
-                { symbol: 'XLMUSDT', name: 'XLM', price: 0.45, priceChange: 3.1 },
-                { symbol: 'ATOMUSDT', name: 'ATOM', price: 8.9, priceChange: 0.5 },
-                { symbol: 'ETCUSDT', name: 'ETC', price: 32, priceChange: -2.3 },
-                { symbol: 'FILUSDT', name: 'FIL', price: 6.8, priceChange: 1.9 },
-                { symbol: 'NEARUSDT', name: 'NEAR', price: 8.2, priceChange: 5.6 },
-                { symbol: 'AAVEUSDT', name: 'AAVE', price: 320, priceChange: 2.8 },
-                { symbol: 'VETUSDT', name: 'VET', price: 0.048, priceChange: 1.2 },
-                { symbol: 'ALGOUSDT', name: 'ALGO', price: 0.42, priceChange: -0.9 },
-                { symbol: 'ICPUSDT', name: 'ICP', price: 14.5, priceChange: 3.4 },
-                { symbol: 'APTUSDT', name: 'APT', price: 12.8, priceChange: 6.2 },
-                { symbol: 'OPUSDT', name: 'OP', price: 2.9, priceChange: 4.1 },
-                { symbol: 'ARBUSDT', name: 'ARB', price: 1.2, priceChange: 2.7 },
-                { symbol: 'FETUSDT', name: 'FET', price: 1.8, priceChange: 7.3 },
-                { symbol: 'PEPEUSDT', name: 'PEPE', price: 0.000021, priceChange: 12.5 },
-                { symbol: 'CAKEUSDT', name: 'CAKE', price: 3.2, priceChange: 1.8 }
+                { symbol: 'SOLUSDT', name: 'SOL', price: 240, priceChange: 3.2 }
             ];
             
             state.cryptoList = defaultCryptos.map(c => ({
@@ -1197,18 +1199,14 @@
             
             document.getElementById('cryptoCount').textContent = `(${state.cryptoList.length})`;
             document.getElementById('refreshText').textContent = 'Actualiser';
-            
-            alert('⚠️ API Binance inaccessible\n\n' +
-                  'Liste par défaut chargée.\n' +
-                  'Les prix seront mis à jour en temps réel via WebSocket.\n\n' +
-                  'Vous pouvez réessayer plus tard en cliquant sur "Actualiser".');
         }
 
-        function changeCrypto() {
+        async function changeCrypto() {
             state.selectedCrypto = document.getElementById('cryptoSelect').value;
             state.priceHistory = [];
             document.getElementById('chartCrypto').textContent = state.selectedCrypto.replace('USDT', '');
             connectWebSocket();
+            await updateTokenBalance();
         }
 
         function changeTradingMode() {
@@ -1432,15 +1430,18 @@
                 const usdtBalance = await getTokenBalance(USDT_CONTRACT, address);
                 state.balanceUSDT = ethers.utils.formatUnits(usdtBalance, 18);
                 
+                await updateTokenBalance();
+                
                 console.log('✅ Soldes mis à jour:');
                 console.log('💰 BNB:', state.balanceBNB);
                 console.log('💵 USDT:', state.balanceUSDT);
+                console.log('💎 Token:', state.balanceToken);
                 
                 document.getElementById('availableBalance').textContent = parseFloat(state.balanceUSDT).toFixed(2);
                 document.getElementById('bnbBalance').textContent = parseFloat(state.balanceBNB).toFixed(4);
                 document.getElementById('usdtBalance').textContent = parseFloat(state.balanceUSDT).toFixed(2);
                 
-                alert(`✅ Soldes actualisés\n\nBNB: ${parseFloat(state.balanceBNB).toFixed(4)}\nUSDT: ${parseFloat(state.balanceUSDT).toFixed(2)}`);
+                alert(`✅ Soldes actualisés\n\nBNB: ${parseFloat(state.balanceBNB).toFixed(4)}\nUSDT: ${parseFloat(state.balanceUSDT).toFixed(2)}\nToken: ${parseFloat(state.balanceToken).toFixed(6)}`);
             } catch (error) {
                 console.error('❌ Erreur synchronisation:', error);
                 alert('❌ Erreur lors de la synchronisation: ' + error.message);
@@ -1478,7 +1479,7 @@
                 startBot();
                 const mode = state.tradingMode === 'real' ? 'RÉEL ⚠️' : 'SIMULATION';
                 const type = state.autoMode ? 'Automatique 24/7' : 'Manuel';
-                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n✅ 3 CONDITIONS REQUISES POUR ACHAT`);
+                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n✅ 3 CONDITIONS + VENTE COMPLÈTE`);
             } else {
                 stopBot();
             }
@@ -1494,7 +1495,7 @@
                 : `${strategy.minTradeInterval / 1000}s`;
             
             console.log(`\n${'🚀'.repeat(35)}`);
-            console.log(`🤖 BOT DE TRADING DÉMARRÉ`);
+            console.log(`🤖 BOT DE TRADING DÉMARRÉ - VERSION CORRIGÉE`);
             console.log(`${'🚀'.repeat(35)}`);
             console.log(`⏰ ${new Date().toLocaleString('fr-FR')}`);
             console.log(`💰 Capital: ${state.tradingCapital.toFixed(2)} USDT`);
@@ -1502,6 +1503,7 @@
             console.log(`💎 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}`);
             console.log(`🤖 Type: ${state.autoMode ? 'Automatique' : 'Manuel'}`);
             console.log(`⏱️ Cooldown: ${intervalDisplay} entre chaque trade`);
+            console.log(`✅ VENTE COMPLÈTE DU SOLDE TOKEN ACTIVÉE`);
             console.log(`✅ 3 CONDITIONS REQUISES: RSI < ${strategy.rsiBuyThreshold}, MACD > 0, Prix > EMA20`);
             console.log(`${'='.repeat(70)}\n`);
             
@@ -1557,10 +1559,6 @@
                 console.log(`💰 Profit total: ${state.portfolio.profit >= 0 ? '+' : ''}${state.portfolio.profit.toFixed(2)} USDT`);
                 console.log(`📈 Performance: ${state.portfolio.profitPercent}%`);
                 console.log(`📍 Position finale: ${state.currentPosition ? '🟢 LONG OUVERTE (non fermée)' : '⚪ AUCUNE'}`);
-                if (state.currentPosition) {
-                    const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                    console.log(`⚠️ Position ouverte non réalisée: ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`);
-                }
                 console.log(`${'='.repeat(70)}\n`);
             }
         }
@@ -1572,28 +1570,14 @@
             if (!state.currentPosition) {
                 const timeSinceLastSell = Date.now() - state.lastSellTime;
                 if (state.lastSellTime > 0 && timeSinceLastSell < POST_SELL_COOLDOWN) {
-                    const cooldownRemaining = Math.ceil((POST_SELL_COOLDOWN - timeSinceLastSell) / 1000);
-                    if (Math.random() < 0.1) {
-                        console.log(`⏸️ Cooldown post-vente: ${cooldownRemaining}s restantes avant prochain achat`);
-                    }
                     return { signal: null, confidence: 0 };
                 }
                 
                 const validConditions = Object.values(state.buyConditions).filter(c => c).length;
                 
                 if (validConditions >= 3) {
-                    console.log(`✅ 3/3 CONDITIONS VALIDÉES:`);
-                    console.log(`   • RSI: ${rsi.toFixed(1)} < ${strategy.rsiBuyThreshold} ✅`);
-                    console.log(`   • MACD: ${macd.histogram.toFixed(4)} > 0 ✅`);
-                    console.log(`   • Prix: $${state.currentPrice.toFixed(6)} > EMA20: $${ema20.toFixed(6)} ✅`);
+                    console.log(`✅ 3/3 CONDITIONS VALIDÉES - SIGNAL D'ACHAT`);
                     return { signal: 'BUY', confidence: 0.9 };
-                } else {
-                    if (Math.random() < 0.05) {
-                        console.log(`⏳ ${validConditions}/3 conditions validées:`);
-                        console.log(`   • RSI: ${rsi.toFixed(1)} ${state.buyConditions.rsi ? '✅' : '❌'}`);
-                        console.log(`   • MACD: ${macd.histogram.toFixed(4)} ${state.buyConditions.macd ? '✅' : '❌'}`);
-                        console.log(`   • Prix > EMA20: ${state.buyConditions.ema ? '✅' : '❌'}`);
-                    }
                 }
                 
                 return { signal: null, confidence: 0 };
@@ -1602,24 +1586,13 @@
                 const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
                 
                 if (profitPercent <= strategy.stopLoss) {
-                    console.log(`🛑 SIGNAL VENTE [${strategy.name}] (Stop Loss): Perte=${profitPercent.toFixed(2)}% ≤ ${strategy.stopLoss}%`);
+                    console.log(`🛑 SIGNAL VENTE (Stop Loss): ${profitPercent.toFixed(2)}%`);
                     return { signal: 'SELL', confidence: 0.95 };
                 }
                 
                 if (profitPercent >= strategy.takeProfit) {
-                    console.log(`🎯 SIGNAL VENTE [${strategy.name}] (Take Profit): Profit=${profitPercent.toFixed(2)}% ≥ ${strategy.takeProfit}%`);
+                    console.log(`🎯 SIGNAL VENTE (Take Profit): ${profitPercent.toFixed(2)}%`);
                     return { signal: 'SELL', confidence: 0.95 };
-                }
-                
-                const minProfitForRSI = strategy.takeProfit * 0.5;
-                if (rsi > strategy.rsiSellStrong && profitPercent >= minProfitForRSI) {
-                    console.log(`📉 SIGNAL VENTE FORT [${strategy.name}]: RSI=${rsi.toFixed(1)} > ${strategy.rsiSellStrong}, Profit=${profitPercent.toFixed(2)}% ≥ ${minProfitForRSI.toFixed(2)}%`);
-                    return { signal: 'SELL', confidence: 0.85 };
-                }
-                
-                if (rsi > strategy.rsiSellThreshold && macd.histogram < 0 && profitPercent >= 0.3) {
-                    console.log(`📉 SIGNAL VENTE [${strategy.name}]: RSI=${rsi.toFixed(1)} > ${strategy.rsiSellThreshold}, MACD négatif, Profit=${profitPercent.toFixed(2)}%`);
-                    return { signal: 'SELL', confidence: 0.8 };
                 }
                 
                 return { signal: null, confidence: 0 };
@@ -1628,14 +1601,12 @@
 
         async function executeTrade(tradeType, confidence) {
             if (tradeType === 'BUY' && state.currentPosition) {
-                console.error(`❌ ERREUR: Tentative d'ACHAT alors qu'une position est déjà ouverte !`);
-                alert('❌ Impossible d\'acheter : vous avez déjà une position ouverte. Vendez d\'abord !');
+                console.error(`❌ ERREUR: Position déjà ouverte`);
                 return;
             }
             
             if (tradeType === 'SELL' && !state.currentPosition) {
-                console.error(`❌ ERREUR: Tentative de VENTE sans position ouverte`);
-                alert('❌ Impossible de vendre sans avoir acheté d\'abord !');
+                console.error(`❌ ERREUR: Aucune position à vendre`);
                 return;
             }
             
@@ -1645,22 +1616,12 @@
             console.log(`\n${'='.repeat(70)}`);
             console.log(`📊 ${tradeType === 'BUY' ? '🟢 ORDRE D\'ACHAT' : '🔴 ORDRE DE VENTE'}`);
             console.log(`${'='.repeat(70)}`);
-            console.log(`⏰ Date: ${new Date().toLocaleString('fr-FR')}`);
+            console.log(`⏰ ${new Date().toLocaleString('fr-FR')}`);
             console.log(`💰 Montant: ${tradeAmountUSDT.toFixed(2)} USDT`);
-            console.log(`📍 Paire: ${state.selectedCrypto}`);
-            console.log(`💵 Prix actuel: $${state.currentPrice.toFixed(6)}`);
-            console.log(`💎 Mode: ${state.tradingMode === 'real' ? 'RÉEL (BSC)' : 'SIMULATION'}`);
-            console.log(`🤖 Type: ${state.autoMode ? 'Automatique' : 'Manuel MetaMask'}`);
-            console.log(`🎯 Stratégie: ${strategies[state.selectedStrategy].name}`);
-            console.log(`📊 Confiance: ${(confidence * 100).toFixed(1)}%`);
-            console.log(`📈 RSI: ${state.indicators.rsi.toFixed(1)}`);
-            console.log(`📉 MACD: ${state.indicators.macd.histogram.toFixed(4)}`);
-            console.log(`📉 EMA20: ${state.indicators.ema20.toFixed(6)}`);
+            console.log(`💵 Prix: $${state.currentPrice.toFixed(6)}`);
             
-            if (tradeType === 'SELL' && state.currentPosition) {
-                const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                console.log(`💎 Prix d'achat: $${state.lastBuyPrice.toFixed(6)}`);
-                console.log(`📊 P&L avant frais: ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`);
+            if (tradeType === 'SELL') {
+                console.log(`💎 Balance token avant vente: ${state.balanceToken}`);
             }
             
             let txHash = null;
@@ -1669,65 +1630,61 @@
             if (state.tradingMode === 'real' && (state.isConnected || state.wallet)) {
                 try {
                     console.log(`\n🔄 Envoi transaction BSC...`);
+                    
+                    if (tradeType === 'SELL') {
+                        await updateTokenBalance();
+                        console.log(`💎 Balance actualisée: ${state.balanceToken}`);
+                    }
+                    
                     txHash = await executeRealTrade(tradeType, tradeAmountUSDT);
-                    console.log(`✅ TX envoyée: ${txHash}`);
-                    console.log(`🔗 BSCScan: https://bscscan.com/tx/${txHash}`);
+                    console.log(`✅ TX: ${txHash}`);
+                    console.log(`🔗 https://bscscan.com/tx/${txHash}`);
                     
                     const slippage = parseFloat(document.getElementById('slippage').value) / 100;
                     executionPrice = state.currentPrice * (1 + (Math.random() * slippage * 2 - slippage));
                 } catch (error) {
-                    console.error(`❌ Erreur transaction:`, error);
+                    console.error(`❌ Erreur:`, error);
                     alert('❌ Erreur transaction: ' + error.message);
                     return;
                 }
             } else {
                 executionPrice = state.currentPrice * (1 + (Math.random() * 0.01 - 0.005));
-                console.log(`\n🎮 Mode simulation - Exécution virtuelle`);
+                console.log(`\n🎮 Mode simulation`);
             }
             
-            console.log(`\n✅ ORDRE EXÉCUTÉ`);
-            console.log(`💵 Prix d'exécution: $${executionPrice.toFixed(6)}`);
+            console.log(`\n✅ ORDRE EXÉCUTÉ à $${executionPrice.toFixed(6)}`);
             
             let profitPercent = 0;
             let netProfitUSDT = 0;
             
             if (tradeType === 'BUY') {
-                if (!state.currentPosition) {
-                    state.currentPosition = 'BUY';
-                    state.lastBuyPrice = executionPrice;
-                    state.positionAmount = tradeAmountUSDT;
-                    console.log(`\n📈 POSITION OUVERTE`);
-                } else {
-                    const totalAmount = state.positionAmount + tradeAmountUSDT;
-                    state.lastBuyPrice = ((state.lastBuyPrice * state.positionAmount) + (executionPrice * tradeAmountUSDT)) / totalAmount;
-                    state.positionAmount = totalAmount;
-                    console.log(`\n📈 POSITION AUGMENTÉE`);
+                state.currentPosition = 'BUY';
+                state.lastBuyPrice = executionPrice;
+                state.positionAmount = tradeAmountUSDT;
+                console.log(`📈 POSITION OUVERTE`);
+                
+                if (state.tradingMode === 'real') {
+                    await updateTokenBalance();
                 }
-                console.log(`💰 Quantité totale: ${state.positionAmount.toFixed(2)} USDT`);
-                console.log(`📍 Prix moyen: $${state.lastBuyPrice.toFixed(6)}`);
                 
             } else {
-                if (!state.currentPosition) {
-                    console.error(`❌ ERREUR: Tentative de VENTE sans position ouverte`);
-                    alert('❌ Erreur: Impossible de vendre sans avoir acheté d\'abord !');
-                    return;
-                }
-                
                 profitPercent = ((executionPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
                 netProfitUSDT = state.positionAmount * (profitPercent / 100);
                 
-                console.log(`\n📉 POSITION FERMÉE`);
-                console.log(`💰 Quantité vendue: ${state.positionAmount.toFixed(2)} USDT`);
-                console.log(`📊 Prix achat moyen: $${state.lastBuyPrice.toFixed(6)}`);
+                console.log(`📉 POSITION FERMÉE`);
+                console.log(`📊 Prix achat: $${state.lastBuyPrice.toFixed(6)}`);
                 console.log(`📊 Prix vente: $${executionPrice.toFixed(6)}`);
-                console.log(`${netProfitUSDT >= 0 ? '📈 PROFIT' : '📉 PERTE'}: ${netProfitUSDT >= 0 ? '+' : ''}${netProfitUSDT.toFixed(4)} USDT (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`);
+                console.log(`${netProfitUSDT >= 0 ? '📈' : '📉'} ${netProfitUSDT >= 0 ? '+' : ''}${netProfitUSDT.toFixed(4)} USDT (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`);
                 
                 state.lastSellTime = Date.now();
-                console.log(`⏸️ Cooldown de sécurité activé: ${POST_SELL_COOLDOWN / 1000}s avant prochain achat`);
-                
                 state.currentPosition = null;
                 state.lastBuyPrice = 0;
                 state.positionAmount = 0;
+                
+                if (state.tradingMode === 'real') {
+                    await updateTokenBalance();
+                    console.log(`💎 Balance après vente: ${state.balanceToken}`);
+                }
             }
             
             const newTrade = {
@@ -1762,15 +1719,14 @@
             updateChart();
             updateUI();
             
-            console.log(`\n💼 PORTFOLIO TOTAL:`);
+            console.log(`\n💼 PORTFOLIO:`);
             console.log(`💰 Capital: ${state.tradingCapital.toFixed(2)} USDT`);
-            console.log(`📈 Profit cumulé: ${state.portfolio.profit >= 0 ? '+' : ''}${state.portfolio.profit.toFixed(2)} USDT`);
+            console.log(`📈 Profit: ${state.portfolio.profit >= 0 ? '+' : ''}${state.portfolio.profit.toFixed(2)} USDT`);
             console.log(`📊 Performance: ${state.portfolio.profitPercent}%`);
-            console.log(`📍 Position actuelle: ${state.currentPosition ? '🟢 LONGUE OUVERTE' : '⚪ AUCUNE'}`);
             console.log(`${'='.repeat(70)}\n`);
         }
 
-        // ✅ FONCTION EXECUTEREAL TRADE CORRIGÉE - CONVERSION USDT FIXÉE
+// ✅ FONCTION CRITIQUE CORRIGÉE - VENTE COMPLÈTE DU SOLDE TOKEN
         async function executeRealTrade(tradeType, amountUSDT) {
             const tokenAddress = TOKEN_ADDRESSES[state.selectedCrypto];
             
@@ -1783,11 +1739,11 @@
             if (state.wallet) {
                 signer = state.wallet;
                 tradingAddress = state.wallet.address;
-                console.log('🔐 Utilisation wallet automatique');
+                console.log('🔐 Mode automatique');
             } else if (state.provider) {
                 signer = state.provider.getSigner();
                 tradingAddress = state.account;
-                console.log('📱 Utilisation MetaMask');
+                console.log('📱 Mode MetaMask');
             } else {
                 throw new Error('Aucun signer disponible');
             }
@@ -1800,17 +1756,12 @@
             const slippage = parseFloat(document.getElementById('slippage').value) / 100;
             const deadline = Math.floor(Date.now() / 1000) + 1200;
             
-            console.log('💎 Montant:', amountUSDT, 'USDT');
-            console.log('📍 Adresse:', tradingAddress);
-            
             const bnbBalance = await signer.provider.getBalance(tradingAddress);
             const minBNBRequired = ethers.utils.parseEther('0.01');
             
             if (bnbBalance.lt(minBNBRequired)) {
-                throw new Error(`Solde BNB insuffisant. Minimum: 0.01 BNB, disponible: ${ethers.utils.formatEther(bnbBalance)}`);
+                throw new Error(`Solde BNB insuffisant. Minimum: 0.01 BNB`);
             }
-            
-            console.log('⛽ Solde BNB:', ethers.utils.formatEther(bnbBalance));
             
             if (tradeType === 'BUY') {
                 const usdtContract = new ethers.Contract(
@@ -1823,21 +1774,16 @@
                     signer
                 );
                 
-                // ✅ CORRECTION CRITIQUE: USDT BSC utilise TOUJOURS 18 décimales
                 const amountInWei = ethers.utils.parseUnits(amountUSDT.toFixed(6), 18);
                 
                 console.log('💰 Montant USDT:', amountUSDT.toFixed(2), 'USDT');
-                console.log('💰 Montant en Wei (18 decimals):', amountInWei.toString());
-                console.log('💰 Vérification:', ethers.utils.formatUnits(amountInWei, 18), 'USDT');
                 
                 const usdtBalance = await usdtContract.balanceOf(tradingAddress);
-                console.log('💵 Solde USDT:', ethers.utils.formatUnits(usdtBalance, 18));
                 
                 if (usdtBalance.lt(amountInWei)) {
-                    throw new Error(`Solde USDT insuffisant. Requis: ${amountUSDT.toFixed(2)}, disponible: ${ethers.utils.formatUnits(usdtBalance, 18)}`);
+                    throw new Error(`Solde USDT insuffisant`);
                 }
                 
-                console.log('📝 Vérification allowance...');
                 const allowance = await usdtContract.allowance(tradingAddress, PANCAKE_ROUTER);
                 
                 if (allowance.lt(amountInWei)) {
@@ -1847,11 +1793,8 @@
                         ethers.constants.MaxUint256,
                         { gasLimit: 100000, gasPrice: gasPriceWithBuffer }
                     );
-                    console.log('⏳ TX approve:', approveTx.hash);
                     await approveTx.wait(1);
                     console.log('✅ USDT approuvé');
-                } else {
-                    console.log('✅ USDT déjà approuvé');
                 }
                 
                 const routerContract = new ethers.Contract(
@@ -1865,7 +1808,6 @@
                 
                 const path = [USDT_CONTRACT, tokenAddress];
                 
-                console.log('📊 Calcul du prix...');
                 const amounts = await routerContract.getAmountsOut(amountInWei, path);
                 const amountOutExpected = amounts[1];
                 const amountOutMin = amountOutExpected.mul(Math.floor((1 - slippage) * 10000)).div(10000);
@@ -1878,12 +1820,12 @@
                 let tokenDecimals = 18;
                 try {
                     tokenDecimals = await tokenContract.decimals();
+                    state.tokenDecimals = tokenDecimals;
                 } catch (e) {
                     console.log('⚠️ Decimals non trouvés, utilisation de 18');
                 }
                 
                 console.log('💱 Tokens attendus:', ethers.utils.formatUnits(amountOutExpected, tokenDecimals));
-                console.log('💱 Tokens minimum:', ethers.utils.formatUnits(amountOutMin, tokenDecimals));
                 
                 console.log('🔄 Swap USDT → Token...');
                 const swapTx = await routerContract.swapExactTokensForTokens(
@@ -1896,15 +1838,14 @@
                 );
                 
                 console.log('⏳ TX swap:', swapTx.hash);
-                console.log('🔗 BSCScan: https://bscscan.com/tx/' + swapTx.hash);
                 
-                const receipt = await swapTx.wait(1);
+                await swapTx.wait(1);
                 console.log('✅ Swap confirmé');
                 
                 return swapTx.hash;
                 
             } else {
-                // VENTE
+                // ✅ VENTE CORRIGÉE - VEND 100% DU SOLDE TOKEN
                 const tokenContract = new ethers.Contract(
                     tokenAddress,
                     [
@@ -1919,17 +1860,21 @@
                 let decimals = 18;
                 try {
                     decimals = await tokenContract.decimals();
+                    state.tokenDecimals = decimals;
                 } catch (e) {
                     console.log('⚠️ Decimals non trouvés, utilisation de 18');
                 }
                 
+                // ✅ RÉCUPÉRER LE SOLDE RÉEL DU WALLET
                 const tokenBalance = await tokenContract.balanceOf(tradingAddress);
                 
-                if (tokenBalance.isZero()) {
-                    throw new Error('Aucun token à vendre');
-                }
+                console.log('💎 Decimals:', decimals);
+                console.log('💎 Balance (raw):', tokenBalance.toString());
+                console.log('💎 Balance (formatted):', ethers.utils.formatUnits(tokenBalance, decimals));
                 
-                console.log('💎 Balance token:', ethers.utils.formatUnits(tokenBalance, decimals));
+                if (tokenBalance.isZero() || tokenBalance.lt(ethers.BigNumber.from('1000'))) {
+                    throw new Error(`Aucun token à vendre: ${ethers.utils.formatUnits(tokenBalance, decimals)}`);
+                }
                 
                 const allowance = await tokenContract.allowance(tradingAddress, PANCAKE_ROUTER);
                 
@@ -1940,11 +1885,8 @@
                         ethers.constants.MaxUint256,
                         { gasLimit: 100000, gasPrice: gasPriceWithBuffer }
                     );
-                    console.log('⏳ TX approve:', approveTx.hash);
                     await approveTx.wait(1);
                     console.log('✅ Token approuvé');
-                } else {
-                    console.log('✅ Token déjà approuvé');
                 }
                 
                 const routerContract = new ethers.Contract(
@@ -1963,11 +1905,12 @@
                 const usdtMin = usdtExpected.mul(Math.floor((1 - slippage) * 10000)).div(10000);
                 
                 console.log('💵 USDT attendu:', ethers.utils.formatUnits(usdtExpected, 18));
-                console.log('💵 USDT minimum:', ethers.utils.formatUnits(usdtMin, 18));
+                console.log('🔄 VENTE COMPLÈTE DE TOUT LE SOLDE TOKEN');
+                console.log('💎 Quantité:', ethers.utils.formatUnits(tokenBalance, decimals));
                 
-                console.log('🔄 Swap Token → USDT...');
+                // ✅ VENDRE 100% DU SOLDE
                 const swapTx = await routerContract.swapExactTokensForTokens(
-                    tokenBalance,
+                    tokenBalance,  // ✅ TOUT LE SOLDE EST VENDU
                     usdtMin,
                     path,
                     tradingAddress,
@@ -1976,10 +1919,9 @@
                 );
                 
                 console.log('⏳ TX swap:', swapTx.hash);
-                console.log('🔗 BSCScan: https://bscscan.com/tx/' + swapTx.hash);
                 
-                const receipt = await swapTx.wait(1);
-                console.log('✅ Swap confirmé');
+                await swapTx.wait(1);
+                console.log('✅ Tous les tokens ont été vendus !');
                 
                 return swapTx.hash;
             }
@@ -2014,14 +1956,12 @@
                         </span>
                         <div>
                             <div class="flex items-center gap-2">
-                                <p class="font-bold text-lg">${t.type === 'BUY' ? 'ACHAT' : 'VENTE'}</p>
+                                <p class="font-bold text-lg">${t.type === 'BUY' ? 'ACHAT' : 'VENTE COMPLÈTE'}</p>
                                 <p class="font-semibold">${t.pair.replace('USDT', '')}/USDT</p>
-                                ${t.mode === 'real' ? '<span class="text-xs bg-orange-400/20 text-orange-400 px-2 py-0.5 rounded font-bold">RÉEL BSC</span>' : '<span class="text-xs bg-blue-400/20 text-blue-400 px-2 py-0.5 rounded">SIM</span>'}
-                                ${t.autoMode ? '<span class="text-xs bg-purple-400/20 text-purple-400 px-2 py-0.5 rounded">AUTO</span>' : ''}
+                                ${t.mode === 'real' ? '<span class="text-xs bg-orange-400/20 text-orange-400 px-2 py-0.5 rounded font-bold">RÉEL</span>' : '<span class="text-xs bg-blue-400/20 text-blue-400 px-2 py-0.5 rounded">SIM</span>'}
                             </div>
-                            <p class="text-xs text-gray-400 mt-1">${t.date ? t.date + ' - ' : ''}${t.time} • ${t.strategy} • ${t.amount} USDT</p>
-                            <p class="text-xs text-gray-500">RSI: ${t.rsi || 'N/A'} • MACD: ${t.macd || 'N/A'}</p>
-                            ${t.txHash ? `<a href="https://bscscan.com/tx/${t.txHash}" target="_blank" class="text-xs text-purple-400 hover:underline mt-1 inline-block">📋 Voir TX sur BSCScan ↗</a>` : ''}
+                            <p class="text-xs text-gray-400 mt-1">${t.date} - ${t.time} • ${t.strategy}</p>
+                            ${t.txHash ? `<a href="https://bscscan.com/tx/${t.txHash}" target="_blank" class="text-xs text-purple-400 hover:underline mt-1 inline-block">📋 BSCScan ↗</a>` : ''}
                         </div>
                     </div>
                     <div class="text-right">
@@ -2096,7 +2036,6 @@
             
             if (state.currentPosition) {
                 const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                const profitUSDT = state.positionAmount * (profitPercent / 100);
                 document.getElementById('positionStatus').innerHTML = `🟢 Long ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
                 document.getElementById('positionStatus').className = profitPercent >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
             } else {
@@ -2108,4 +2047,4 @@
         }
     </script>
 </body>
-</html>
+</html>// ⚠️ FIN DE LA PARTIE 1 - CONTINUEZ AVEC LA PARTIE 2 ⚠️
