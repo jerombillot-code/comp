@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Trading Multi-Crypto Pro - CORRIGÉ CORS</title>
+    <title>Bot Trading Multi-Crypto Pro - TP 3.5% | Trailing Stop 0.5%</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -31,12 +31,18 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
                 <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                    🐱 Bot Trading Multi-Crypto Pro - CORRIGÉ CORS
+                    🐱 Bot Trading Multi-Crypto Pro - TP 3.5% | Trailing 0.5%
                 </h1>
-                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE du solde • Prix temps réel • Trading automatique 24/7 • 3 Conditions ✅</p>
+                <p class="text-gray-400 mt-2">✅ Vente COMPLÈTE • Trailing Stop 0.5% • TP 3.5% • SL 3% • 3 Conditions • 📱 Notifications Telegram</p>
             </div>
             
             <div class="flex gap-3">
+                <button onclick="window.open('https://t.me/BotTradingMultiCrypto', '_blank')" class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 rounded-lg font-semibold transition-all">
+                    <span>📱</span>
+                    Telegram
+                    <span>↗</span>
+                </button>
+                
                 <button onclick="openDCASwap()" class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-semibold transition-all">
                     <span>🔄</span>
                     DCA/Swap
@@ -263,6 +269,77 @@
             </div>
         </div>
 
+        <div id="telegramBotSection" class="glass-effect rounded-xl p-6 mb-6 border-2 border-blue-400 hidden">
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                <span>📱</span>
+                Bot Telegram - Notifications en Temps Réel
+            </h3>
+            
+            <div class="bg-blue-900/30 border-2 border-blue-400 rounded-lg p-4 mb-4">
+                <p class="text-blue-300 font-bold mb-3 text-lg">📢 RECEVEZ VOS TRADES SUR TELEGRAM</p>
+                <p class="text-blue-200 text-sm mb-2">
+                    ✅ Notification instantanée de chaque achat/vente<br>
+                    ✅ Prix d'entrée/sortie et profit en temps réel<br>
+                    ✅ Statut du bot et alertes importantes<br>
+                    ✅ Suivi à distance 24/7
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-lg font-bold text-gray-300 mb-3">
+                        🤖 Token du Bot Telegram
+                    </label>
+                    <input 
+                        type="password" 
+                        id="telegramBotToken" 
+                        placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz" 
+                        class="w-full glass-effect rounded-lg px-4 py-4 focus:outline-none focus:border-blue-400 text-lg border-2 border-gray-600 focus:border-blue-400"
+                    >
+                    <p class="text-xs text-gray-400 mt-2">Obtenez-le via @BotFather sur Telegram</p>
+                </div>
+
+                <div>
+                    <label class="block text-lg font-bold text-gray-300 mb-3">
+                        💬 Votre Chat ID Telegram
+                    </label>
+                    <input 
+                        type="text" 
+                        id="telegramChatId" 
+                        placeholder="123456789" 
+                        class="w-full glass-effect rounded-lg px-4 py-4 focus:outline-none focus:border-blue-400 text-lg border-2 border-gray-600 focus:border-blue-400"
+                    >
+                    <p class="text-xs text-gray-400 mt-2">Obtenez-le via @userinfobot sur Telegram</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="testTelegramBot()" class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-all">
+                        🧪 Tester la connexion
+                    </button>
+                    <button onclick="saveTelegramConfig()" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg font-semibold transition-all">
+                        ✅ Enregistrer
+                    </button>
+                </div>
+
+                <div id="telegramStatus" class="hidden p-3 rounded-lg"></div>
+            </div>
+
+            <div class="mt-4 p-4 bg-purple-500/20 border border-purple-500 rounded-lg">
+                <p class="text-purple-300 font-bold mb-2">💡 COMMENT CONFIGURER LE BOT TELEGRAM ?</p>
+                <ol class="text-sm text-purple-200 space-y-2">
+                    <li>1. Ouvrez Telegram et cherchez <strong>@BotFather</strong></li>
+                    <li>2. Envoyez la commande <code>/newbot</code></li>
+                    <li>3. Donnez un nom à votre bot (ex: MonBotTrading)</li>
+                    <li>4. Choisissez un username (ex: MonBotTrading_bot)</li>
+                    <li>5. Copiez le <strong>Token</strong> fourni par BotFather</li>
+                    <li>6. Cherchez <strong>@userinfobot</strong> et cliquez sur Start</li>
+                    <li>7. Copiez votre <strong>Chat ID</strong> (numéro affiché)</li>
+                    <li>8. Collez les deux valeurs ci-dessus et cliquez sur Enregistrer</li>
+                    <li>9. Cherchez votre bot sur Telegram et cliquez sur Start</li>
+                </ol>
+            </div>
+        </div>
+
         <div id="capitalSection" class="glass-effect rounded-xl p-6 mb-6 border-2 border-green-500 hidden">
             <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
                 <span>🎯</span>
@@ -389,6 +466,7 @@
                             <p>Position: <span id="positionStatus">⚪ Aucune</span></p>
                             <p>Binance: <span id="apiStatus">🟡 ...</span></p>
                             <p>Ethers: <span id="ethersStatus">🟡 ...</span></p>
+                            <p>Telegram: <span id="telegramStatus2">🔴 Désactivé</span></p>
                         </div>
                     </div>
                 </div>
@@ -445,6 +523,7 @@
             positionAmount: 0,
             positionTokenAmount: 0,
             lastSellTime: 0,
+            highestPriceReached: 0,
             chartData: { labels: [], prices: [], buyPoints: [], sellPoints: [] },
             subscription: {
                 isActive: false,
@@ -457,7 +536,12 @@
                 macd: false,
                 ema: false
             },
-            tokenDecimals: 18
+            tokenDecimals: 18,
+            telegram: {
+                enabled: false,
+                botToken: '',
+                chatId: ''
+            }
         };
 
         let ws = null, botInterval = null, lastTradeTime = 0;
@@ -491,41 +575,34 @@
         const strategies = {
             scalping: { 
                 name: 'Scalping', 
-                description: 'Rapide RSI+MACD', 
+                description: 'TP 3.5% | Trailing 0.5%', 
                 minTradeInterval: 180000,
                 rsiBuyThreshold: 40,
                 rsiBuyStrong: 30,
                 rsiSellThreshold: 60,
                 rsiSellStrong: 70,
-                takeProfit: 2.2,
-                stopLoss: -1.8
+                takeProfit: 3.5,
+                stopLoss: -3.0,
+                trailingStop: 0.5
             },
             swing: { 
                 name: 'Swing', 
-                description: 'Positions EMA', 
+                description: 'TP 3.5% | Trailing 0.5%', 
                 minTradeInterval: 900000,
                 rsiBuyThreshold: 35,
                 rsiBuyStrong: 25,
                 rsiSellThreshold: 70,
                 rsiSellStrong: 75,
-                takeProfit: 2.2,
-                stopLoss: -1.8
-            },
-            arbitrage: { 
-                name: 'Arbitrage', 
-                description: 'Diff prix', 
-                minTradeInterval: 60000,
-                rsiBuyThreshold: 45,
-                rsiBuyStrong: 35,
-                rsiSellThreshold: 55,
-                rsiSellStrong: 65,
-                takeProfit: 2.2,
-                stopLoss: -1.8
+                takeProfit: 3.5,
+                stopLoss: -3.0,
+                trailingStop: 0.5
             }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Bot chargé - VERSION CORRIGÉE CORS - Vente complète du solde token');
+            console.log('🚀 Bot chargé - VERSION AVEC TRAILING STOP');
+            console.log('🎯 Paramètres: TP +3.5% | SL -3.0% | Trailing 0.5%');
+            console.log('✅ Vente complète du solde token activée');
             
             if (typeof ethers !== 'undefined') {
                 document.getElementById('ethersStatus').innerHTML = '🟢 v' + ethers.version;
@@ -537,6 +614,7 @@
             
             initChart();
             renderStrategies();
+            loadTelegramConfig();
             
             // Charger la liste par défaut immédiatement
             loadDefaultCryptoList();
@@ -669,6 +747,7 @@
                         <p>📊 Achat: RSI &lt; ${s.rsiBuyThreshold}</p>
                         <p>📈 Vente: RSI &gt; ${s.rsiSellThreshold}</p>
                         <p>🎯 TP: +${s.takeProfit}% | SL: ${s.stopLoss}%</p>
+                        <p>📉 Trailing Stop: ${s.trailingStop}%</p>
                         <p>⏱️ Cooldown: ${intervalDisplay}</p>
                     </div>
                 </div>
@@ -696,6 +775,7 @@
             console.log(`   • Vente: RSI > ${newStrategy.rsiSellThreshold} (fort: > ${newStrategy.rsiSellStrong})`);
             console.log(`   • Take Profit: +${newStrategy.takeProfit}%`);
             console.log(`   • Stop Loss: ${newStrategy.stopLoss}%`);
+            console.log(`   • Trailing Stop: ${newStrategy.trailingStop}%`);
             console.log(`   • Cooldown: ${intervalDisplay} entre chaque trade`);
             console.log(`   • ✅ 3 CONDITIONS REQUISES POUR ACHAT`);
             console.log(`${'='.repeat(70)}\n`);
@@ -1440,7 +1520,7 @@
             state.capitalSet = true;
             
             updateUI();
-            alert(`✅ Capital défini: ${capital} USDT\n✅ 3 conditions requises pour ACHAT`);
+            alert(`✅ Capital défini: ${capital} USDT\n\n🎯 Paramètres de trading:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 3 conditions requises pour ACHAT`);
         }
 
         function setMaxCapital() {
@@ -1530,7 +1610,7 @@
                 startBot();
                 const mode = state.tradingMode === 'real' ? 'RÉEL ⚠️' : 'SIMULATION';
                 const type = state.autoMode ? 'Automatique 24/7' : 'Manuel';
-                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n✅ 3 CONDITIONS + VENTE COMPLÈTE`);
+                alert(`✅ Bot démarré\n\nMode: ${mode}\nType: ${type}\n\n🎯 Paramètres:\n• Take Profit: +3.5%\n• Stop Loss: -3.0%\n• Trailing Stop: 0.5%\n\n✅ 3 CONDITIONS + VENTE COMPLÈTE`);
             } else {
                 stopBot();
             }
@@ -1554,9 +1634,30 @@
             console.log(`💎 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}`);
             console.log(`🤖 Type: ${state.autoMode ? 'Automatique' : 'Manuel'}`);
             console.log(`⏱️ Cooldown: ${intervalDisplay} entre chaque trade`);
-            console.log(`✅ VENTE COMPLÈTE DU SOLDE TOKEN ACTIVÉE`);
+            console.log(`\n🎯 PARAMÈTRES DE SORTIE:`);
+            console.log(`   • Take Profit: +${strategy.takeProfit}%`);
+            console.log(`   • Stop Loss: ${strategy.stopLoss}%`);
+            console.log(`   • Trailing Stop: ${strategy.trailingStop}% (depuis le plus haut)`);
+            console.log(`\n✅ VENTE COMPLÈTE DU SOLDE TOKEN ACTIVÉE`);
             console.log(`✅ 3 CONDITIONS REQUISES: RSI < ${strategy.rsiBuyThreshold}, MACD > 0, Prix > EMA20`);
             console.log(`${'='.repeat(70)}\n`);
+            
+            // Notification Telegram
+            if (state.telegram.enabled) {
+                const telegramMsg = 
+                    `🚀 <b>BOT DÉMARRÉ</b>\n\n` +
+                    `💰 Capital: ${state.tradingCapital.toFixed(2)} USDT\n` +
+                    `📊 Stratégie: ${strategy.name}\n` +
+                    `💎 Mode: ${state.tradingMode === 'real' ? 'RÉEL ⚠️' : 'SIMULATION'}\n` +
+                    `🤖 Type: ${state.autoMode ? 'Automatique 24/7' : 'Manuel'}\n\n` +
+                    `🎯 <b>Paramètres:</b>\n` +
+                    `• Take Profit: +${strategy.takeProfit}%\n` +
+                    `• Stop Loss: ${strategy.stopLoss}%\n` +
+                    `• Trailing Stop: ${strategy.trailingStop}%\n` +
+                    `• Cooldown: ${intervalDisplay}\n\n` +
+                    `⏰ ${new Date().toLocaleString('fr-FR')}`;
+                sendTelegramMessage(telegramMsg);
+            }
             
             let logCounter = 0;
             
@@ -1585,7 +1686,7 @@
                 const signal = getTradeSignal();
                 if (signal.signal && signal.confidence > 0.65) {
                     console.log(`\n🎯 SIGNAL DÉTECTÉ: ${signal.signal} (Confiance: ${(signal.confidence * 100).toFixed(1)}%)`);
-                    executeTrade(signal.signal, signal.confidence);
+                    executeTrade(signal.signal, signal.confidence, signal.reason || '');
                     logCounter = 0;
                 } else {
                     if (logCounter % 10 === 0 && !signal.signal) {
@@ -1611,6 +1712,18 @@
                 console.log(`📈 Performance: ${state.portfolio.profitPercent}%`);
                 console.log(`📍 Position finale: ${state.currentPosition ? '🟢 LONG OUVERTE (non fermée)' : '⚪ AUCUNE'}`);
                 console.log(`${'='.repeat(70)}\n`);
+                
+                // Notification Telegram
+                if (state.telegram.enabled) {
+                    const telegramMsg = 
+                        `🛑 <b>BOT ARRÊTÉ</b>\n\n` +
+                        `📊 Trades effectués: ${state.trades.length}\n` +
+                        `💰 Profit total: ${state.portfolio.profit >= 0 ? '+' : ''}${state.portfolio.profit.toFixed(2)} USDT\n` +
+                        `📈 Performance: ${state.portfolio.profitPercent}%\n` +
+                        `📍 Position: ${state.currentPosition ? '🟢 LONG OUVERTE' : '⚪ AUCUNE'}\n\n` +
+                        `⏰ ${new Date().toLocaleString('fr-FR')}`;
+                    sendTelegramMessage(telegramMsg);
+                }
             }
         }
 
@@ -1634,23 +1747,40 @@
                 return { signal: null, confidence: 0 };
             } 
             else {
-                const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                
-                if (profitPercent <= strategy.stopLoss) {
-                    console.log(`🛑 SIGNAL VENTE (Stop Loss): ${profitPercent.toFixed(2)}%`);
-                    return { signal: 'SELL', confidence: 0.95 };
+                // Mettre à jour le prix le plus haut atteint
+                if (state.currentPrice > state.highestPriceReached) {
+                    state.highestPriceReached = state.currentPrice;
                 }
                 
+                const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
+                const dropFromHighest = ((state.currentPrice - state.highestPriceReached) / state.highestPriceReached) * 100;
+                
+                // Stop Loss : -3%
+                if (profitPercent <= strategy.stopLoss) {
+                    console.log(`🛑 SIGNAL VENTE (Stop Loss): ${profitPercent.toFixed(2)}%`);
+                    return { signal: 'SELL', confidence: 0.95, reason: 'Stop Loss' };
+                }
+                
+                // Trailing Stop : baisse de 0.5% depuis le plus haut
+                if (dropFromHighest <= -strategy.trailingStop) {
+                    const profitFromHighest = ((state.highestPriceReached - state.lastBuyPrice) / state.lastBuyPrice) * 100;
+                    console.log(`📉 SIGNAL VENTE (Trailing Stop): Prix a baissé de ${Math.abs(dropFromHighest).toFixed(2)}% depuis le plus haut`);
+                    console.log(`   Plus haut: $${state.highestPriceReached.toFixed(6)} (+${profitFromHighest.toFixed(2)}%)`);
+                    console.log(`   Actuel: $${state.currentPrice.toFixed(6)} (+${profitPercent.toFixed(2)}%)`);
+                    return { signal: 'SELL', confidence: 0.95, reason: 'Trailing Stop' };
+                }
+                
+                // Take Profit : +3.5%
                 if (profitPercent >= strategy.takeProfit) {
                     console.log(`🎯 SIGNAL VENTE (Take Profit): ${profitPercent.toFixed(2)}%`);
-                    return { signal: 'SELL', confidence: 0.95 };
+                    return { signal: 'SELL', confidence: 0.95, reason: 'Take Profit' };
                 }
                 
                 return { signal: null, confidence: 0 };
             }
         }
 
-        async function executeTrade(tradeType, confidence) {
+        async function executeTrade(tradeType, confidence, reason = '') {
             if (tradeType === 'BUY' && state.currentPosition) {
                 console.error(`❌ ERREUR: Position déjà ouverte`);
                 return;
@@ -1666,6 +1796,7 @@
             
             console.log(`\n${'='.repeat(70)}`);
             console.log(`📊 ${tradeType === 'BUY' ? '🟢 ORDRE D\'ACHAT' : '🔴 ORDRE DE VENTE'}`);
+            if (reason) console.log(`📌 Raison: ${reason}`);
             console.log(`${'='.repeat(70)}`);
             console.log(`⏰ ${new Date().toLocaleString('fr-FR')}`);
             console.log(`💰 Montant: ${tradeAmountUSDT.toFixed(2)} USDT`);
@@ -1673,6 +1804,7 @@
             
             if (tradeType === 'SELL') {
                 console.log(`💎 Balance token avant vente: ${state.balanceToken}`);
+                console.log(`📊 Plus haut atteint: $${state.highestPriceReached.toFixed(6)}`);
             }
             
             let txHash = null;
@@ -1711,8 +1843,24 @@
             if (tradeType === 'BUY') {
                 state.currentPosition = 'BUY';
                 state.lastBuyPrice = executionPrice;
+                state.highestPriceReached = executionPrice;
                 state.positionAmount = tradeAmountUSDT;
                 console.log(`📈 POSITION OUVERTE`);
+                console.log(`🎯 Take Profit: +3.5% | Stop Loss: -3.0% | Trailing Stop: 0.5%`);
+                
+                // Notification Telegram
+                if (state.telegram.enabled) {
+                    const telegramMsg = 
+                        `🟢 <b>ACHAT</b>\n\n` +
+                        `💎 <b>${state.selectedCrypto.replace('USDT', '')}/USDT</b>\n` +
+                        `💰 Montant: ${tradeAmountUSDT.toFixed(2)} USDT\n` +
+                        `💵 Prix: $${executionPrice.toFixed(6)}\n` +
+                        `📊 Stratégie: ${strategies[state.selectedStrategy].name}\n` +
+                        `🤖 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}\n\n` +
+                        `🎯 TP: +3.5% | SL: -3.0% | Trailing: 0.5%\n` +
+                        `⏰ ${new Date().toLocaleString('fr-FR')}`;
+                    sendTelegramMessage(telegramMsg);
+                }
                 
                 if (state.tradingMode === 'real') {
                     await updateTokenBalance();
@@ -1725,11 +1873,33 @@
                 console.log(`📉 POSITION FERMÉE`);
                 console.log(`📊 Prix achat: $${state.lastBuyPrice.toFixed(6)}`);
                 console.log(`📊 Prix vente: $${executionPrice.toFixed(6)}`);
+                console.log(`📊 Plus haut: $${state.highestPriceReached.toFixed(6)}`);
                 console.log(`${netProfitUSDT >= 0 ? '📈' : '📉'} ${netProfitUSDT >= 0 ? '+' : ''}${netProfitUSDT.toFixed(4)} USDT (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`);
+                
+                // Notification Telegram
+                if (state.telegram.enabled) {
+                    const profitEmoji = netProfitUSDT >= 0 ? '📈' : '📉';
+                    const reasonEmoji = reason === 'Take Profit' ? '🎯' : reason === 'Stop Loss' ? '🛑' : '📉';
+                    const telegramMsg = 
+                        `🔴 <b>VENTE</b> ${reasonEmoji}\n\n` +
+                        `💎 <b>${state.selectedCrypto.replace('USDT', '')}/USDT</b>\n` +
+                        `💰 Montant: ${state.positionAmount.toFixed(2)} USDT\n` +
+                        `📊 Achat: $${state.lastBuyPrice.toFixed(6)}\n` +
+                        `💵 Vente: $${executionPrice.toFixed(6)}\n` +
+                        `📊 Plus haut: $${state.highestPriceReached.toFixed(6)}\n\n` +
+                        `${profitEmoji} <b>Profit: ${netProfitUSDT >= 0 ? '+' : ''}${netProfitUSDT.toFixed(4)} USDT (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)</b>\n` +
+                        `📌 Raison: ${reason || 'Signal'}\n` +
+                        `📊 Stratégie: ${strategies[state.selectedStrategy].name}\n` +
+                        `🤖 Mode: ${state.tradingMode === 'real' ? 'RÉEL' : 'SIMULATION'}\n\n` +
+                        `💼 Profit total: ${state.portfolio.profit >= 0 ? '+' : ''}${(state.portfolio.profit + netProfitUSDT).toFixed(2)} USDT\n` +
+                        `⏰ ${new Date().toLocaleString('fr-FR')}`;
+                    sendTelegramMessage(telegramMsg);
+                }
                 
                 state.lastSellTime = Date.now();
                 state.currentPosition = null;
                 state.lastBuyPrice = 0;
+                state.highestPriceReached = 0;
                 state.positionAmount = 0;
                 
                 if (state.tradingMode === 'real') {
@@ -1753,7 +1923,8 @@
                 strategy: strategies[state.selectedStrategy].name,
                 autoMode: state.autoMode,
                 rsi: state.indicators.rsi.toFixed(1),
-                macd: state.indicators.macd.histogram.toFixed(4)
+                macd: state.indicators.macd.histogram.toFixed(4),
+                reason: reason
             };
             
             state.trades.unshift(newTrade);
@@ -1992,6 +2163,147 @@
             }
         }
 
+        async function sendTelegramMessage(message) {
+            if (!state.telegram.enabled || !state.telegram.botToken || !state.telegram.chatId) {
+                return;
+            }
+
+            try {
+                const url = `https://api.telegram.org/bot${state.telegram.botToken}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: state.telegram.chatId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error('❌ Erreur Telegram:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Erreur envoi Telegram:', error);
+            }
+        }
+
+        async function testTelegramBot() {
+            const botToken = document.getElementById('telegramBotToken').value.trim();
+            const chatId = document.getElementById('telegramChatId').value.trim();
+
+            if (!botToken || !chatId) {
+                showTelegramStatus('❌ Veuillez remplir les deux champs', 'error');
+                return;
+            }
+
+            showTelegramStatus('🔄 Test en cours...', 'info');
+
+            try {
+                const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: '✅ <b>Bot Trading Multi-Crypto Pro</b>\n\n🎉 Connexion réussie !\n📱 Vous recevrez désormais toutes les notifications de trading.',
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                if (response.ok) {
+                    showTelegramStatus('✅ Test réussi ! Vérifiez Telegram', 'success');
+                    console.log('✅ Message de test envoyé sur Telegram');
+                } else {
+                    const error = await response.json();
+                    showTelegramStatus(`❌ Erreur: ${error.description || 'Token ou Chat ID invalide'}`, 'error');
+                    console.error('❌ Erreur Telegram:', error);
+                }
+            } catch (error) {
+                showTelegramStatus('❌ Erreur de connexion', 'error');
+                console.error('❌ Erreur test Telegram:', error);
+            }
+        }
+
+        function saveTelegramConfig() {
+            const botToken = document.getElementById('telegramBotToken').value.trim();
+            const chatId = document.getElementById('telegramChatId').value.trim();
+
+            if (!botToken || !chatId) {
+                showTelegramStatus('❌ Veuillez remplir les deux champs', 'error');
+                return;
+            }
+
+            state.telegram.botToken = botToken;
+            state.telegram.chatId = chatId;
+            state.telegram.enabled = true;
+
+            // Sauvegarder dans localStorage
+            localStorage.setItem('telegram_config', JSON.stringify({
+                botToken: botToken,
+                chatId: chatId,
+                enabled: true
+            }));
+
+            showTelegramStatus('✅ Configuration enregistrée !', 'success');
+            console.log('✅ Configuration Telegram enregistrée');
+            
+            // Mettre à jour l'indicateur de statut
+            document.getElementById('telegramStatus2').innerHTML = '🟢 Activé';
+
+            // Envoyer un message de confirmation
+            sendTelegramMessage(
+                '✅ <b>Configuration enregistrée</b>\n\n' +
+                '📱 Les notifications sont maintenant actives.\n' +
+                '🤖 Vous recevrez un message à chaque trade.'
+            );
+        }
+
+        function loadTelegramConfig() {
+            const saved = localStorage.getItem('telegram_config');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    state.telegram.botToken = config.botToken || '';
+                    state.telegram.chatId = config.chatId || '';
+                    state.telegram.enabled = config.enabled || false;
+
+                    document.getElementById('telegramBotToken').value = config.botToken || '';
+                    document.getElementById('telegramChatId').value = config.chatId || '';
+
+                    if (config.enabled) {
+                        console.log('✅ Configuration Telegram chargée');
+                        document.getElementById('telegramStatus2').innerHTML = '🟢 Activé';
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur chargement config Telegram:', error);
+                }
+            }
+        }
+
+        function showTelegramStatus(message, type) {
+            const statusDiv = document.getElementById('telegramStatus');
+            statusDiv.classList.remove('hidden');
+            
+            if (type === 'success') {
+                statusDiv.className = 'p-3 rounded-lg bg-green-500/20 border border-green-500 text-green-300';
+            } else if (type === 'error') {
+                statusDiv.className = 'p-3 rounded-lg bg-red-500/20 border border-red-500 text-red-300';
+            } else {
+                statusDiv.className = 'p-3 rounded-lg bg-blue-500/20 border border-blue-500 text-blue-300';
+            }
+            
+            statusDiv.textContent = message;
+
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 5000);
+        }
+
         function renderTrades() {
             if (state.trades.length === 0) return;
             
@@ -2006,6 +2318,7 @@
                                 <p class="font-bold text-lg">${t.type === 'BUY' ? 'ACHAT' : 'VENTE COMPLÈTE'}</p>
                                 <p class="font-semibold">${t.pair.replace('USDT', '')}/USDT</p>
                                 ${t.mode === 'real' ? '<span class="text-xs bg-orange-400/20 text-orange-400 px-2 py-0.5 rounded font-bold">RÉEL</span>' : '<span class="text-xs bg-blue-400/20 text-blue-400 px-2 py-0.5 rounded">SIM</span>'}
+                                ${t.reason ? `<span class="text-xs bg-purple-400/20 text-purple-400 px-2 py-0.5 rounded">${t.reason}</span>` : ''}
                             </div>
                             <p class="text-xs text-gray-400 mt-1">${t.date} - ${t.time} • ${t.strategy}</p>
                             ${t.txHash ? `<a href="https://bscscan.com/tx/${t.txHash}" target="_blank" class="text-xs text-purple-400 hover:underline mt-1 inline-block">📋 BSCScan ↗</a>` : ''}
@@ -2034,6 +2347,7 @@
                 
                 document.getElementById('cryptoSelector').classList.remove('hidden');
                 document.getElementById('privateKeySection').classList.remove('hidden');
+                document.getElementById('telegramBotSection').classList.remove('hidden');
                 document.getElementById('capitalSection').classList.remove('hidden');
                 
                 document.getElementById('bnbBalance').textContent = parseFloat(state.balanceBNB).toFixed(4);
@@ -2083,7 +2397,15 @@
             
             if (state.currentPosition) {
                 const profitPercent = ((state.currentPrice - state.lastBuyPrice) / state.lastBuyPrice) * 100;
-                document.getElementById('positionStatus').innerHTML = `🟢 Long ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
+                const highestProfit = ((state.highestPriceReached - state.lastBuyPrice) / state.lastBuyPrice) * 100;
+                const dropFromHighest = ((state.currentPrice - state.highestPriceReached) / state.highestPriceReached) * 100;
+                
+                let statusText = `🟢 Long ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
+                if (state.highestPriceReached > state.lastBuyPrice) {
+                    statusText += ` (Max: +${highestProfit.toFixed(2)}%)`;
+                }
+                
+                document.getElementById('positionStatus').innerHTML = statusText;
                 document.getElementById('positionStatus').className = profitPercent >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
             } else {
                 document.getElementById('positionStatus').innerHTML = '⚪ Aucune';
